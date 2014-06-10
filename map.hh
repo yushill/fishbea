@@ -85,14 +85,13 @@ struct RCPtr
   }
 };
 
-struct RoomBuf;
 struct Action;
 
-struct RoomBuf : public RefCounter
+struct RoomBuf : public virtual RefCounter
 {
+  virtual std::string    getname() const = 0;
   virtual void           process( Action& ) const = 0;
-  virtual int cmp( RoomBuf const& _rb ) const = 0;
-  virtual std::string getname() const = 0;
+  virtual int            cmp( RoomBuf const& _rb ) const = 0;
 };
 
 typedef RCPtr<RoomBuf> Room;

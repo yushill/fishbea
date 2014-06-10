@@ -179,7 +179,7 @@ TimeLine::restore_state( Point& _pos, Room& _room ) const
 };
 
 bool
-TimeLine::locate( date_t _date, Room _room, Point& _pos ) const
+TimeLine::locate( date_t _date, Room _room, Point& _pos, bool& fire ) const
 {
   Map::const_iterator itr = m_map.lower_bound( _date );
   if (itr == m_map.end()) { --itr; _date = itr->first; }
@@ -188,6 +188,7 @@ TimeLine::locate( date_t _date, Room _room, Point& _pos ) const
   Character const& chr = chunk.steps[offset];
   if (chunk.rooms[chr.room] != _room) return false;
   _pos = Point( chr.xpos, chr.ypos );
+  fire = chr.fire;
   return true;
 }
 

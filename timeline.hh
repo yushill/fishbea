@@ -72,7 +72,18 @@ struct TimeLine
   void          update_usetime();
   void          compress();
   void          restore_state( Point& _pos, Room& _room ) const;
-  bool          locate( date_t _date, Room _room, Point& _pos ) const;
+  bool          locate( date_t _date, Room _room, Point& _pos, bool& fire ) const;
+  template <typename T>
+  bool          match( date_t _date, T& _filter )
+  {
+    Map::const_iterator itr = m_map.lower_bound( _date );
+    if (itr == m_map.end()) return false;
+    Chunk const& chunk = itr->second;
+    date_t offset = _date - itr->first;
+    if (offset >= chunk.steps().size()) return false;
+    Character const& chr = chunk.steps[offset];
+    return _filter.match( chunk.rooms[chr.room], Point( chr.xpos, chr.ypos ), chr.fire );
+  }
   void          getbounds( date_t& lo, date_t& hi ) const;
   void          updatebounds( date_t& lo, date_t& hi ) const;
   void          getstorybounds( date_t& lo, date_t& hi ) const;

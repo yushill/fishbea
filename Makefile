@@ -4,7 +4,7 @@ CPPFLAGS=-I.
 CXXFLAGS=-g3 -Wall
 LIBS=-lSDL -lSDL_image
 
-SRCS=top.cc dmmap.cc timeline.cc video.cc action.cc gallery.cc
+SRCS=top.cc timeline.cc video.cc action.cc gallery.cc dmmap.cc epmap.cc
 
 OBJS=$(patsubst %.cc,$(BUILD)/%.o,$(SRCS))
 PPIS=$(patsubst %.cc,$(BUILD)/%.i,$(SRCS))

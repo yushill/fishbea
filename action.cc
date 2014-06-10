@@ -54,7 +54,8 @@ void Action::run()
       for (TimeLine *tl = m_story.firstghost(), *eotl = m_story.active; tl != eotl; tl = tl->fwd())
         {
           Point gpos;
-          if (not tl->locate( m_story.eoa-1, curroom, gpos )) continue;
+          bool gfire;
+          if (not tl->locate( m_story.eoa-1, curroom, gpos, gfire )) continue;
           this->blit( gpos, gallery::gray_ghost );
         }
     
