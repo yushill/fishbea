@@ -37,24 +37,22 @@ EPRoomBuf::process( Action& _action ) const
   _action.blit( Point(320, 192), gallery::classic_bg );
   for (int door = 0; door < 4; ++door )
     _action.blit( Point( 64, 96+64*door ), code.bit( door ) ? gallery::shiny_shell : gallery::shell );
+  
   if (code.value == m_code) {
+    static Point const exit( 576, 192 );
     // draw exit
-    bool fishexit = false;
-    _action.blit( Point( 576, 192 ), fishexit ? gallery::shiny_shell : gallery::shell );
+    bool fishexit = (_action.m_pos - exit).m2() <= 24*24;
+    _action.blit( exit, fishexit ? gallery::shiny_shell : gallery::shell );
+    if (_action.m_control.fires() and fishexit)
+      {
+        _action.moveto( this->end_upcoming() );
+        std::cerr << "Entering room: " << _action.m_room->getname() << ".\n";
+        _action.m_control.fired();
+        return;
+      }
   }
   
-  // GameWorld interaction
-  if (_action.m_control.fires())
-    {
-      // if (active.m_room) {
-      //   active.destination( _action.m_room, _action.m_pos );
-      //   std::cerr << "Entering room: " << _action.m_room->getname() << ".\n";
-      //   _action.m_control.fired();
-      // }
-    }
-    
-  else
-    _action.m_pos += _action.m_control.motion()*10;
+  _action.m_pos += _action.m_control.motion()*10;
 }
 
 RoomBuf const*

@@ -34,8 +34,8 @@ struct TimeLine
     Chunk( Chunk const& chunk ) : rooms(chunk.rooms), steps(chunk.steps) {}
     void append( Point const& _position, bool _fire )
     { steps.push_back( Character( rooms.size()-1, _position, _fire ) ); }
-    void reserve( Room const& _room )
-    { rooms.reserve(128); rooms.push_back(_room); steps.reserve(4096); }
+    void reserve()
+    { rooms.reserve(128); steps.reserve(4096); }
     void singleton( Room const& _room, Point const& _position, bool _fire )
     {
       rooms.reserve(1); rooms.push_back( _room );
@@ -43,7 +43,7 @@ struct TimeLine
     }
     bool useroom( Room const& _room )
     {
-      if (rooms.back() == _room) return true;
+      if ((rooms.size() > 0) and (rooms.back() == _room)) return true;
       if (rooms.size() == rooms.capacity()) return false;
       rooms.push_back( _room );
       return true;
@@ -54,7 +54,7 @@ struct TimeLine
   typedef std::map<date_t,Chunk,date_more> Map;
   
   // Contruction
-  TimeLine() : m_fwd(), m_bwd(), m_usetime(), m_thumb() {}
+  TimeLine( date_t date );
   TimeLine( date_t date, Room const& _room, Point const& _position, bool _fire, SDL_Surface* thumb );
   // No copies
   TimeLine( TimeLine const& _tl ) { throw "NoNoNo"; }
@@ -109,9 +109,9 @@ struct Story
   
   static uintptr_t const record_count_max = (0x1000000 / sizeof (Character));
   
-  Story( Room const& _room, Point const& _startpoint )
-    : active(new TimeLine( 0, _room, _startpoint, false, 0 )),
-      record_count(1), bot(0), boa(0), eoa(1), eot(1)
+  Story()
+    : active(new TimeLine( 0 )),
+      record_count(1), bot(0), boa(0), eoa(0), eot(0)
   {}
   
   TimeLine* firstghost() { return active->fwd(); }

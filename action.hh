@@ -54,7 +54,7 @@ struct Action
   enum timebar_style { tbs_full = 0, tbs_point };
   static const int FramePeriod = 40;
   
-  Action( Room _room, Point const& _startpoint, SDL_Surface* _screen );
+  Action( SDL_Surface* _screen );
   
   void run();
   void draw_timebar( timebar_style tbs );
@@ -62,6 +62,7 @@ struct Action
   void jump();
   void blit( Point const& _pos, SDL_Surface* _src );
   void endstats( std::ostream& _sink );
+  void moveto( Gate const& gate ) { m_room = gate.room; m_pos = gate.pos; }
 };
 
 #endif /* __ACTION_HH__ */

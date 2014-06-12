@@ -11,6 +11,7 @@ struct RefCounter
   mutable uintptr_t _M_refcount;
   virtual void dispose() const = 0;
   RefCounter() : _M_refcount() {}
+  virtual ~RefCounter() {}
   void retain() const { this->_M_refcount += 1; }
   void release() const { if (--this->_M_refcount == 0) this->dispose(); };
 };
@@ -92,6 +93,7 @@ struct RoomBuf : public virtual RefCounter
   virtual std::string    getname() const = 0;
   virtual void           process( Action& ) const = 0;
   virtual int            cmp( RoomBuf const& _rb ) const = 0;
+  virtual ~RoomBuf() {}
 };
 
 typedef RCPtr<RoomBuf> Room;
@@ -109,6 +111,12 @@ struct RecycleHeap {
     src->~T();
     Link* l = (Link*)src; l->next = pool; pool = l;
   }
+};
+
+struct Gate {
+  Room  room;
+  Point pos;
+  Gate( Room const& _room, Point const& _pos ) : room(_room), pos(_pos) {}
 };
 
 #endif /* __MAP_HH__ */

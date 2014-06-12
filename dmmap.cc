@@ -4,8 +4,6 @@
 #include <sstream>
 #include <gallery.hh>
 
-RecycleHeap<DMRoomBuf> DMRoomBuf::heap;
-
 void
 DMRoomBuf::process( Action& _action ) const
 {
@@ -30,7 +28,7 @@ DMRoomBuf::process( Action& _action ) const
   if (_action.m_control.fires())
     {
       if (active.m_room) {
-        active.destination( _action.m_room, _action.m_pos );
+        _action.moveto( active.destination() );
         std::cerr << "Entering room: " << _action.m_room->getname() << ".\n";
         _action.m_control.fired();
       }
@@ -40,12 +38,10 @@ DMRoomBuf::process( Action& _action ) const
     _action.m_pos += _action.m_control.motion()*10;
 }
 
-RoomBuf const*
-DMRoomBuf::firstroom()
+Gate
+DMRoomBuf::start_incoming()
 {
-  DMRoomBuf* res = DMRoomBuf::heap.allocate();
-  new (res) DMRoomBuf( Point() );
-  return res;
+  return Gate( new DMRoomBuf( Point() ), Point(50,50) );
 }
 
 std::string

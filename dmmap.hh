@@ -42,15 +42,12 @@ struct DMRoomBuf : public RoomBuf
   
     Point getpos() const { return Point( 320, 192 ) + shuffledir( m_room->seed(), m_dir )*96; }
   
-    void destination( Room& _room, Point& _pos ) const
+    Gate destination() const
     {
-      // compute destination room
-      DMRoomBuf* r = DMRoomBuf::heap.allocate();
-      new (r) DMRoomBuf( m_room->m_loc + m_dir );
-      _room = Room( r );
-      // compute destination position (from destination door)
+      // compute destination room and position (with destination door)
+      DMRoomBuf* r = new DMRoomBuf( m_room->m_loc + m_dir );
       DMDoor ddoor( r, -m_dir );
-      _pos = ddoor.getpos();
+      return Gate( r, ddoor.getpos() );
     }
   };
 
@@ -58,6 +55,7 @@ struct DMRoomBuf : public RoomBuf
   
   DMRoomBuf( Point const& _loc ) : m_loc(_loc) {}
   DMRoomBuf( DMRoomBuf const& _room ) : m_loc(_room.m_loc) {}
+  virtual ~DMRoomBuf() {};
   
   int cmp( RoomBuf const& _rb ) const
   {
@@ -67,16 +65,15 @@ struct DMRoomBuf : public RoomBuf
   
   DMDoor                firstdoor() const { return DMDoor( this, Point() ); }
   void                  process( Action& _action ) const;
-  void                  dispose() const { heap.deallocate( this ); }
-  static RoomBuf const* firstroom();
+  void                  dispose() const { delete this; }
   static const int rad = 4;
   static bool           valid( Point const& pos ) {
     if (pos.m_x == rad and pos.m_y == (rad-1)) return true;
     return (pos.m_x >= 0 and pos.m_y >= 0 and pos.m_x < rad and pos.m_y < rad);
   }
-  static RecycleHeap<DMRoomBuf> heap;
   int seed() const { return m_loc.m_x + m_loc.m_y*rad; }
-  std::string getname() const;
+  std::string           getname() const;
+  static Gate           start_incoming();
 };
 
 #endif /*__DMMAP_HH__*/

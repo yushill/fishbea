@@ -1,13 +1,16 @@
 #include <iostream>
 #include <action.hh>
 #include <dmmap.hh>
+#include <epmap.hh>
 
 int
 main( int argc, char** argv )
 {
   VideoConfig vc;
   
-  Action action( DMRoomBuf::firstroom(), Point( 50, 50 ), vc.screen );
+  Action action( vc.screen );
+  
+  action.moveto( DMRoomBuf::start_incoming() );
   
   std::cerr << "Rolling!!!\n";
   
@@ -18,3 +21,4 @@ main( int argc, char** argv )
   return 0;
 }
 
+Gate EPRoomBuf::end_upcoming() { return DMRoomBuf::start_incoming(); }

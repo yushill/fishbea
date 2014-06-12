@@ -15,15 +15,11 @@ Control::collect()
     }
 }
 
-Action::Action( Room _room, Point const& _startpoint, SDL_Surface* _screen )
+Action::Action( SDL_Surface* _screen )
   : m_screen( _screen ),
-    m_next_ticks( 0 ),
-    m_pos( _startpoint ), m_room( _room ),
-    m_story( _room, _startpoint )
-    // m_timeline( new TimeLine( 0, _room, _startpoint, false, 0 ) ),
-    // m_record_count( 1 )
+    m_next_ticks( SDL_GetTicks() + FramePeriod ),
+    m_pos(), m_room(), m_story()
 {
-  m_next_ticks = SDL_GetTicks() + FramePeriod;
 }
 
 void Action::run()

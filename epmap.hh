@@ -6,7 +6,7 @@
 
 struct EPRoomBuf : public RoomBuf
 {
-  EPRoomBuf( uint32_t& _code ) : m_code(_code) {}
+  EPRoomBuf( uint32_t _code ) : m_code(_code) {}
   EPRoomBuf( EPRoomBuf const& _room ) : m_code(_room.m_code) {}
   
   void                  dispose() const { heap.deallocate( this ); }
@@ -21,6 +21,8 @@ struct EPRoomBuf : public RoomBuf
   uint32_t              m_code;
   static RoomBuf const* firstroom();
   static RecycleHeap<EPRoomBuf> heap;
+  
+  static Gate           end_upcoming();
 };
 
 #endif /*__EPMAP_HH__*/

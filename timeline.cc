@@ -27,9 +27,18 @@ TimeLine::append( date_t date, Room const& _room, Point const& _position, bool _
   if (((chunk->steps.capacity() - chunksize) == 0) or not chunk->useroom(_room)) {
     tail = m_map.insert( tail, std::make_pair( date, Chunk() ) );
     chunk = &tail->second;
-    chunk->reserve( _room );
+    chunk->reserve();
+    chunk->rooms.push_back( _room );
   }
   chunk->append( _position, _fire );
+}
+
+TimeLine::TimeLine( date_t date )
+  : m_fwd(this), m_bwd(this), m_usetime(), m_thumb(0)
+{
+  Chunk& chunk = m_map.insert( m_map.end(), std::make_pair( date, Chunk() ) )->second;
+  chunk.reserve();
+  this->update_usetime();
 }
 
 TimeLine::TimeLine( date_t date, Room const& _room, Point const& _position, bool _fire, SDL_Surface* thumb )
@@ -184,7 +193,7 @@ TimeLine::locate( date_t _date, Room _room, Point& _pos, bool& fire ) const
   Map::const_iterator itr = m_map.lower_bound( _date );
   if (itr == m_map.end()) { --itr; _date = itr->first; }
   Chunk const& chunk = itr->second;
-  date_t offset = std::min( _date - itr->first, chunk.steps.size()-1 );
+  date_t offset = std::min( _date - itr->first, date_t( chunk.steps.size()-1 ) );
   Character const& chr = chunk.steps[offset];
   if (chunk.rooms[chr.room] != _room) return false;
   _pos = Point( chr.xpos, chr.ypos );
