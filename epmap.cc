@@ -6,48 +6,42 @@
 
 RecycleHeap<EPRoomBuf> EPRoomBuf::heap;
 
-bool
-which_button( Point const& pos, int& _idx )
+struct Code
 {
-  int idx = (pos.m_y >> 6) - 1;
-  if (idx < 0 or idx >= 4) return false;
-  Point tmp( pos );
-  tmp.m_y &= 63;
-  if ((tmp - Point(64,32)).m2() > 24*24) return false;
-  _idx = idx;
-  return true;
-}
+  Room room;
+  uint32_t value;
+  Code( Room _room ) : room(_room), value(0) {}
+  bool match( Room _room, Point const& _pos, bool fire )
+  {
+    if (_room != room or not fire) return false;
+    int idx = (_pos.m_y >> 6) - 1;
+    if (idx < 0 or idx >= 4) return false;
+    if ((Point( _pos.m_x, _pos.m_y & 63 ) - Point(64,32)).m2() > 24*24) return false;
+    value |= (1 << idx);
+    return false;
+  }
+  bool bit( int idx ) { return (value >> idx) & 1; }
+};
 
 void
 EPRoomBuf::process( Action& _action ) const
 {
   // Collision items precomputed from scene rendering
-  int active;
-  uint32_t code = 0;
-  
-  for (TimeLine *tl = _action.m_story.firstghost(), *eotl = _action.m_story.active; tl != eotl; tl = tl->fwd())
-    {
-      Point btn;
-      bool fire;
-      if (not tl->locate( _action.m_story.eoa-1, Room( this ), btn, fire ) or not fire) continue;
-      int btnidx = -1;
-      if (not which_button( btn, btnidx )) continue;
-      code |= (1 << btnidx);
-    }
-    
+  Code code( this );
+  {
+    TimeLine *tl = _action.m_story.active, *eotl = _action.m_story.active;
+    do { tl->match( _action.m_story.eoa-1, code ); } while ((tl = tl->fwd()) != eotl);
+  }  
 
   // Scene Draw
   _action.blit( Point(320, 192), gallery::classic_bg );
   for (int door = 0; door < 4; ++door )
-    {
-      Point pos( 64, 96+64*door );
-      if ((pos - _action.m_pos).m2() > 24*24) {
-        _action.blit( pos, gallery::shell );
-      } else {
-        _action.blit( pos, gallery::shiny_shell );
-        active = door;
-      }
-    }
+    _action.blit( Point( 64, 96+64*door ), code.bit( door ) ? gallery::shiny_shell : gallery::shell );
+  if (code.value == m_code) {
+    // draw exit
+    bool fishexit = false;
+    _action.blit( Point( 576, 192 ), fishexit ? gallery::shiny_shell : gallery::shell );
+  }
   
   // GameWorld interaction
   if (_action.m_control.fires())

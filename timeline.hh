@@ -80,7 +80,7 @@ struct TimeLine
     if (itr == m_map.end()) return false;
     Chunk const& chunk = itr->second;
     date_t offset = _date - itr->first;
-    if (offset >= chunk.steps().size()) return false;
+    if (offset >= chunk.steps.size()) return false;
     Character const& chr = chunk.steps[offset];
     return _filter.match( chunk.rooms[chr.room], Point( chr.xpos, chr.ypos ), chr.fire );
   }
