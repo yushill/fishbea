@@ -63,6 +63,7 @@ struct Action
   void blit( Point const& _pos, SDL_Surface* _src );
   void endstats( std::ostream& _sink );
   void moveto( Gate const& gate ) { m_room = gate.room; m_pos = gate.pos; }
+  void normalmotion() { m_pos += m_control.motion()*10; }
 };
 
 #endif /* __ACTION_HH__ */

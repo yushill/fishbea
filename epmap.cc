@@ -4,8 +4,6 @@
 #include <sstream>
 #include <gallery.hh>
 
-RecycleHeap<EPRoomBuf> EPRoomBuf::heap;
-
 struct Code
 {
   Room room;
@@ -52,16 +50,13 @@ EPRoomBuf::process( Action& _action ) const
       }
   }
   
-  _action.m_pos += _action.m_control.motion()*10;
+  _action.normalmotion();
 }
 
-RoomBuf const*
-EPRoomBuf::firstroom()
+Gate
+EPRoomBuf::start_incoming()
 {
-  // EPRoomBuf* res = EPRoomBuf::heap.allocate();
-  // new (res) EPRoomBuf( Point() );
-  // return res;
-  return 0;
+  return Gate( new EPRoomBuf( 0xa ), Point(320, 192) );
 }
 
 std::string

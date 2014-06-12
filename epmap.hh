@@ -9,7 +9,7 @@ struct EPRoomBuf : public RoomBuf
   EPRoomBuf( uint32_t _code ) : m_code(_code) {}
   EPRoomBuf( EPRoomBuf const& _room ) : m_code(_room.m_code) {}
   
-  void                  dispose() const { heap.deallocate( this ); }
+  void                  dispose() const { delete this; }
   std::string           getname() const;
   void                  process( Action& _action ) const;
   int                   cmp( RoomBuf const& _rb ) const
@@ -19,8 +19,7 @@ struct EPRoomBuf : public RoomBuf
   }
   
   uint32_t              m_code;
-  static RoomBuf const* firstroom();
-  static RecycleHeap<EPRoomBuf> heap;
+  static Gate           start_incoming();
   
   static Gate           end_upcoming();
 };

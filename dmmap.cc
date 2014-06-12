@@ -35,7 +35,7 @@ DMRoomBuf::process( Action& _action ) const
     }
     
   else
-    _action.m_pos += _action.m_control.motion()*10;
+    _action.normalmotion();
 }
 
 Gate
