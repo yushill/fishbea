@@ -46,10 +46,7 @@ struct Action
   Room              m_room;
   
   // TimeLines and story
-  //typedef std::list<TimeLine> Story;
   Story             m_story;
-  //TimeLine*         m_timeline;
-  //uintptr_t         m_record_count;
   
   enum timebar_style { tbs_full = 0, tbs_point };
   static const int FramePeriod = 40;
@@ -61,6 +58,7 @@ struct Action
   void flipandwait();
   void jump();
   void blit( Point const& _pos, SDL_Surface* _src );
+  void blit( SDL_Surface* _src );
   void endstats( std::ostream& _sink );
   void moveto( Gate const& gate ) { m_room = gate.room; m_pos = gate.pos; }
   void normalmotion() { m_pos += m_control.motion()*10; }

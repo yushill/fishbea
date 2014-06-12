@@ -4,6 +4,23 @@
 #include <sstream>
 #include <gallery.hh>
 
+Point
+DMRoomBuf::DMDoor::getpos() const
+{
+  int seed = m_room->m_loc.m_x + m_room->m_loc.m_y*rad;
+  int index = ((m_dir.m_y - m_dir.m_x > 0) ? 1 : 0) | ((m_dir.m_y + m_dir.m_x > 0) ? 2 : 0);
+  {
+    int perms[4] = {0,1,2,3};
+    for (int perm = 0; perm <= index; ++perm) {
+      int pos = perm + (seed % (4-perm));
+      if (pos > perm) { int tmp = perms[perm]; perms[perm] = perms[pos]; perms[pos] = tmp; }
+    }
+    index = perms[index];
+  }
+  int a = index & 1, b = (index >> 1) & 1;
+  return Point( 320, 192 ) + Point( b - a, a + b - 1 )*96;
+}
+
 void
 DMRoomBuf::process( Action& _action ) const
 {
@@ -12,7 +29,7 @@ DMRoomBuf::process( Action& _action ) const
     
   // std::cerr << "Subject pos: " << m_x << "," << m_y << ".\n";
   // Scene Draw
-  _action.blit( Point(320, 192), gallery::classic_bg );
+  _action.blit( gallery::classic_bg );
   for (DMDoor door = this->firstdoor(); door.next(); )
     {
       Point pos = door.getpos();
@@ -51,21 +68,3 @@ DMRoomBuf::getname() const
   oss << "DiamondRoom[" << m_loc.m_x << ", " << m_loc.m_y << "]";
   return oss.str();
 }
-
-
-Point shuffledir( int seed, Point const& _src )
-{
-  int index = ((_src.m_y - _src.m_x > 0) ? 1 : 0) | ((_src.m_y + _src.m_x > 0) ? 2 : 0);
-  {
-    int perms[4] = {0,1,2,3};
-    for (int perm = 0; perm <= index; ++perm) {
-      int pos = perm + (seed % (4-perm));
-      if (pos > perm) { int tmp = perms[perm]; perms[perm] = perms[pos]; perms[pos] = tmp; }
-    }
-    index = perms[index];
-  }
-  int a = index & 1, b = (index >> 1) & 1;
-  return Point( b - a, a + b - 1 );
-}
-
-

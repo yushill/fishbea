@@ -19,8 +19,7 @@ Action::Action( SDL_Surface* _screen )
   : m_screen( _screen ),
     m_next_ticks( SDL_GetTicks() + FramePeriod ),
     m_pos(), m_room(), m_story()
-{
-}
+{}
 
 void Action::run()
 {
@@ -32,7 +31,7 @@ void Action::run()
       m_control.picked();
       SDL_Surface* thumb = SDL_DisplayFormatAlpha( m_screen );
       image_apply( Grayify(), thumb );
-      m_story.newbwd( m_story.eoa, m_room, m_pos, thumb );
+      m_story.newbwd( m_room, m_pos, thumb );
     }
     
     if (m_control.jumps()) {
@@ -51,12 +50,12 @@ void Action::run()
         {
           Point gpos;
           bool gfire;
-          if (not tl->locate( m_story.eoa-1, curroom, gpos, gfire )) continue;
+          if (not tl->locate( m_story.now(), curroom, gpos, gfire )) continue;
           this->blit( gpos, gallery::gray_ghost );
         }
-    
+      
       draw_timebar( tbs_point );
-    
+      
       this->flipandwait();
     }
   }
@@ -127,7 +126,7 @@ Action::jump()
     for (int idx = 0; idx < 16; ++idx)
       {
         image_apply( Fade(slide,begin,thumb,double(idx)/16.), slide );
-        this->blit( Point(320, 192), slide );
+        this->blit( slide );
         this->flipandwait();
       }
     SDL_FreeSurface( begin );
@@ -149,7 +148,7 @@ Action::jump()
     
   while (true) {
     SDL_Surface* curthumb = m_story.active->m_thumb;
-    this->blit( Point(320, 192), curthumb );
+    this->blit( curthumb );
     draw_timebar( tbs_full );
     this->flipandwait();
     m_control.collect();
@@ -180,7 +179,7 @@ Action::jump()
   std::cerr << "Jumping to room: " << m_room->getname() << ".\n";
   if (m_control.shift())
     {
-      m_story.newbwd( m_story.eoa, m_room, m_pos, 0 );
+      m_story.newbwd( m_room, m_pos, 0 );
       m_story.movbwd();
     }
   else
@@ -199,6 +198,15 @@ Action::blit( Point const& _pos, SDL_Surface* _src )
 {
   SDL_Rect offset;
   (_pos - (Point(_src->w, _src->h)/2)).pull( offset );
+  
+  SDL_BlitSurface( _src, NULL, m_screen, &offset );
+}
+
+void
+Action::blit( SDL_Surface* _src )
+{
+  SDL_Rect offset;
+  Point(0,0).pull( offset );
   
   SDL_BlitSurface( _src, NULL, m_screen, &offset );
 }

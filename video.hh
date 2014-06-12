@@ -7,9 +7,6 @@
 
 struct SDL_Surface;
 
-
-#include <stdexcept>
-
 struct VideoConfig
 {
   static const int width = 640;

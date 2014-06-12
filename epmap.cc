@@ -28,11 +28,11 @@ EPRoomBuf::process( Action& _action ) const
   Code code( this );
   {
     TimeLine *tl = _action.m_story.active, *eotl = _action.m_story.active;
-    do { tl->match( _action.m_story.eoa-1, code ); } while ((tl = tl->fwd()) != eotl);
+    do { tl->match( _action.m_story.now(), code ); } while ((tl = tl->fwd()) != eotl);
   }  
 
   // Scene Draw
-  _action.blit( Point(320, 192), gallery::classic_bg );
+  _action.blit( gallery::classic_bg );
   for (int door = 0; door < 4; ++door )
     _action.blit( Point( 64, 96+64*door ), code.bit( door ) ? gallery::shiny_shell : gallery::shell );
   

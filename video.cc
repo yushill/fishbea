@@ -2,6 +2,7 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <iostream>
+#include <stdexcept>
 
 VideoConfig::VideoConfig()
   : screen()
@@ -24,7 +25,6 @@ VideoConfig::~VideoConfig()
   ImageStore::pool->exit();
   SDL_Quit();
 }
-  
 
 SDL_Surface*
 load_image( std::string filename )

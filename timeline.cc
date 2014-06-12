@@ -242,14 +242,3 @@ TimeLine::record_count() const
     res += itr->second.steps.size();
   return res;
 }
-
-// int
-// main()
-// {
-//   TimeLine tl( 0xfff, Character( true ) );
-  
-//   for (date_t date = 0x1000; date < date_t(0x5000); ++date) {
-//     tl.append( date ).fire = ((date%3) == (date%4));
-//   }
-//   return 0;
-// }

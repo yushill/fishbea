@@ -113,11 +113,11 @@ struct Story
     : active(new TimeLine( 0 )),
       record_count(1), bot(0), boa(0), eoa(0), eot(0)
   {}
-  
+  date_t now() const { return eoa - 1; }
   TimeLine* firstghost() { return active->fwd(); }
-  void newbwd( date_t _eoa, Room const& _room, Point const& _pos, SDL_Surface* thumb )
+  void newbwd( Room const& _room, Point const& _pos, SDL_Surface* thumb )
   {
-    active->insbwd( new TimeLine( _eoa-1, _room, _pos, false, thumb ) );
+    active->insbwd( new TimeLine( now(), _room, _pos, false, thumb ) );
     record_count += 1;
     active->update_usetime();
   }
