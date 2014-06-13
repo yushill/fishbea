@@ -132,22 +132,11 @@ Action::jump()
     SDL_FreeSurface( begin );
     SDL_FreeSurface( slide );
   }
-    
-  m_story.active->thumb( thumb );
-  // std::string filename = cfmt( "jump%d.bmp", ++count );
-  // SDL_SaveBMP( thumb, filename.c_str() );
-    
-  // typedef std::list<TimeLine*> TLs;
-  // TLs tls;
-  // TLs::iterator active;
-  // for (Story::iterator src = m_story.begin(); src != m_story.end(); ++src) {
-  //   TimeLine* tlp = &*src;
-  //   tls.push_back( tlp );
-  //   if (tlp == m_timeline) { active = tls.end(); --active; }
-  // }
+  
+  m_story.active->setthumb( thumb );
     
   while (true) {
-    SDL_Surface* curthumb = m_story.active->m_thumb;
+    SDL_Surface* curthumb = m_story.active->getthumb();
     this->blit( curthumb );
     draw_timebar( tbs_full );
     this->flipandwait();
@@ -161,7 +150,7 @@ Action::jump()
     else if (m_control.delfwd()) { aptl.reset( m_story.popfwd() ); dir = -640; }
     else if (m_control.delbwd()) { aptl.reset( m_story.popbwd() ); dir = +640; }
     else { continue; }
-    SDL_Surface* nxtthumb = m_story.active->m_thumb;
+    SDL_Surface* nxtthumb = m_story.active->getthumb();
       
     for (int idx = 0; idx < 24; ++idx) {
       Point cur( 320+((idx*dir)/24), 192 );
@@ -184,7 +173,7 @@ Action::jump()
     }
   else
     {
-      SDL_FreeSurface( m_story.active->thumb( 0 ) );
+      m_story.active->setthumb( 0 );
       if (m_control.alt()) {
         /*fast forward to end of time*/
         m_story.forward();

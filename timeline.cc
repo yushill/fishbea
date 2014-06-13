@@ -1,5 +1,6 @@
 #include <timeline.hh>
 #include <geometry.hh>
+#include <SDL/SDL_video.h>
 #include <iostream>
 #include <sstream>
 #include <limits>
@@ -9,6 +10,20 @@
 #include <vector>
 #include <stdexcept>
 #include <inttypes.h>
+
+TimeLine::~TimeLine()
+{
+  if (m_thumb)
+    SDL_FreeSurface( m_thumb );
+}
+
+void
+TimeLine::setthumb( SDL_Surface* _thumb )
+{
+  if (m_thumb)
+    SDL_FreeSurface( m_thumb );
+  m_thumb = _thumb;
+}
 
 void
 TimeLine::append( date_t date, Room const& _room, Point const& _position, bool _fire )

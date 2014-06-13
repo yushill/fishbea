@@ -7,7 +7,7 @@
 struct EPRoomBuf : public RoomBuf
 {
   EPRoomBuf( uint32_t _code ) : m_code(_code) {}
-  //EPRoomBuf( EPRoomBuf const& _room ) : m_code(_room.m_code) {}
+  EPRoomBuf( EPRoomBuf const& _room ) { throw "NoNoNo"; }
   virtual ~EPRoomBuf() {}
   
   void                  dispose() const { delete this; }

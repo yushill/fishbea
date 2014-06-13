@@ -56,6 +56,7 @@ struct TimeLine
   // Contruction
   TimeLine( date_t date );
   TimeLine( date_t date, Room const& _room, Point const& _position, bool _fire, SDL_Surface* thumb );
+  ~TimeLine();
   // No copies
   TimeLine( TimeLine const& _tl ) { throw "NoNoNo"; }
   TimeLine& operator=( TimeLine const& _tl ) { throw "NoNoNo"; }
@@ -68,7 +69,8 @@ struct TimeLine
   bool          single() const { return (m_fwd == this) and (m_bwd == this); }
   
   void          append( date_t date, Room const& _room, Point const& _position, bool _fire );
-  SDL_Surface*  thumb( SDL_Surface* newthumb ) { SDL_Surface* oldthumb = m_thumb; m_thumb = newthumb; return oldthumb; };
+  void          setthumb( SDL_Surface* newthumb );
+  SDL_Surface*  getthumb() { return m_thumb; };
   void          update_usetime();
   void          compress();
   void          restore_state( Point& _pos, Room& _room ) const;
@@ -94,8 +96,6 @@ struct TimeLine
   Map           m_map;
   uintptr_t     m_usetime; /* last use time */
   SDL_Surface*  m_thumb;
-  
-  // Construction and assignation we dont want
 };
 
 struct Story
@@ -113,6 +113,12 @@ struct Story
     : active(new TimeLine( 0 )),
       record_count(0), bot(0), boa(0), eoa(0), eot(0)
   {}
+  ~Story()
+  {
+    while (not active->single()) delete popfwd();
+    delete active;
+  }
+  
   date_t now() const { return eoa - 1; }
   TimeLine* firstghost() { return active->fwd(); }
   void newbwd( Room const& _room, Point const& _pos, SDL_Surface* thumb )

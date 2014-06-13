@@ -39,7 +39,7 @@ struct DMRoomBuf : public RoomBuf
   Point                 m_loc;
   
   DMRoomBuf( Point const& _loc ) : m_loc(_loc) {}
-  //DMRoomBuf( DMRoomBuf const& _room ) : m_loc(_room.m_loc) {}
+  DMRoomBuf( DMRoomBuf const& _room ) { throw "NoNoNo"; }
   virtual ~DMRoomBuf() {};
   
   int cmp( RoomBuf const& _rb ) const
