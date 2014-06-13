@@ -111,7 +111,7 @@ struct Story
   
   Story()
     : active(new TimeLine( 0 )),
-      record_count(1), bot(0), boa(0), eoa(0), eot(0)
+      record_count(0), bot(0), boa(0), eoa(0), eot(0)
   {}
   date_t now() const { return eoa - 1; }
   TimeLine* firstghost() { return active->fwd(); }

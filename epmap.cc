@@ -41,11 +41,11 @@ EPRoomBuf::process( Action& _action ) const
     // draw exit
     bool fishexit = (_action.m_pos - exit).m2() <= 24*24;
     _action.blit( exit, fishexit ? gallery::shiny_shell : gallery::shell );
-    if (_action.m_control.fires() and fishexit)
+    if (_action.fires() and fishexit)
       {
         _action.moveto( this->end_upcoming() );
         std::cerr << "Entering room: " << _action.m_room->getname() << ".\n";
-        _action.m_control.fired();
+        _action.fired();
         return;
       }
   }

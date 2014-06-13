@@ -42,13 +42,11 @@ DMRoomBuf::process( Action& _action ) const
     }
   // GameWorld interaction
     
-  if (_action.m_control.fires())
+  if (active.m_room and _action.fires())
     {
-      if (active.m_room) {
-        _action.moveto( active.destination() );
-        std::cerr << "Entering room: " << _action.m_room->getname() << ".\n";
-        _action.m_control.fired();
-      }
+      _action.moveto( active.destination() );
+      std::cerr << "Entering room: " << _action.m_room->getname() << ".\n";
+      _action.fired();
     }
     
   else

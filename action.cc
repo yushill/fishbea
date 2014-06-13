@@ -18,7 +18,7 @@ Control::collect()
 Action::Action( SDL_Surface* _screen )
   : m_screen( _screen ),
     m_next_ticks( SDL_GetTicks() + FramePeriod ),
-    m_pos(), m_room(), m_story()
+    m_story(), m_room(), m_pos()
 {}
 
 void Action::run()

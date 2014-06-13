@@ -34,34 +34,35 @@ struct Control
 
 struct Action
 {
-  // Display
-  SDL_Surface*      m_screen;
-  int               m_next_ticks;
-  
-  // Control
-  Control           m_control;
-  
-  // Action
-  Point             m_pos;
-  Room              m_room;
-  
-  // TimeLines and story
-  Story             m_story;
-  
-  enum timebar_style { tbs_full = 0, tbs_point };
-  static const int FramePeriod = 40;
-  
   Action( SDL_Surface* _screen );
   
+  // Gamer interaction
   void run();
+  enum timebar_style { tbs_full = 0, tbs_point };
   void draw_timebar( timebar_style tbs );
   void flipandwait();
   void jump();
+  bool fires() const { return m_control.fires(); }
+  void fired() { m_control.fired(); }
   void blit( Point const& _pos, SDL_Surface* _src );
   void blit( SDL_Surface* _src );
-  void endstats( std::ostream& _sink );
+
+private:  
+  SDL_Surface*      m_screen;
+  static const int  FramePeriod = 40;
+  int               m_next_ticks;
+  Control           m_control;
+  
+public:
+  // Engine
   void moveto( Gate const& gate ) { m_room = gate.room; m_pos = gate.pos; }
   void normalmotion() { m_pos += m_control.motion()*10; }
+  
+  Story             m_story;
+  Room              m_room;
+  Point             m_pos;
+  
+  void endstats( std::ostream& _sink );
 };
 
 #endif /* __ACTION_HH__ */
