@@ -24,6 +24,19 @@ struct Character
   {}
 };
 
+struct Ghost
+{
+  Room room;
+  Point pos;
+  Ghost( Room _room ) : room(_room), pos() {}
+  bool match( Room _room, Point const& _pos, bool fire )
+  {
+    if (_room != room) return false;
+    pos = _pos;
+    return true;
+  }
+};
+
 struct TimeLine
 {
   struct Chunk {
@@ -74,7 +87,7 @@ struct TimeLine
   void          update_usetime();
   void          compress();
   void          restore_state( Point& _pos, Room& _room ) const;
-  bool          locate( date_t _date, Room _room, Point& _pos, bool& fire ) const;
+  bool          locate( date_t& _date, Ghost& _pos ) const;
   template <typename T>
   bool          match( date_t _date, T& _filter )
   {
@@ -88,7 +101,6 @@ struct TimeLine
   }
   void          getbounds( date_t& lo, date_t& hi ) const;
   void          updatebounds( date_t& lo, date_t& hi ) const;
-  void          getstorybounds( date_t& lo, date_t& hi ) const;
   uintptr_t     record_count() const;
   
   TimeLine*     m_fwd;

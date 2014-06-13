@@ -17,7 +17,11 @@ void gallery::__init__()
 {
   hero = load_image( "data/Nemo.png" );
   gray_ghost = SDL_ConvertSurface( hero, hero->format, hero->flags );
+  blue_ghost = SDL_ConvertSurface( hero, hero->format, hero->flags );
+  red_ghost = SDL_ConvertSurface( hero, hero->format, hero->flags );
   image_apply( Ghostify(), gray_ghost );
+  image_apply( Blueify(), blue_ghost );
+  image_apply( Redify(), red_ghost );
   shell = load_image( "data/door.png" );
   shiny_shell =  SDL_ConvertSurface( shell, shell->format, shell->flags );
   classic_bg = load_image( "data/background.png" );

@@ -50,6 +50,22 @@ struct Ghostify { void operator() ( uint8_t* imgp ) const {
   imgp[3] /= 2;
 }};
 
+struct Blueify { void operator() ( uint8_t* imgp ) const {
+  uint8_t gray = (0x4c8b43*imgp[0] + 0x9645a2*imgp[1] + 0x1d2f1b*imgp[2])>>24;
+  imgp[0] = 0;
+  imgp[1] = 0;
+  imgp[2] = gray;
+  imgp[3] /= 2;
+}};
+
+struct Redify { void operator() ( uint8_t* imgp ) const {
+  uint8_t gray = (0x4c8b43*imgp[0] + 0x9645a2*imgp[1] + 0x1d2f1b*imgp[2])>>24;
+  imgp[0] = gray;
+  imgp[1] = 0;
+  imgp[2] = 0;
+  imgp[3] /= 2;
+}};
+
 struct Fade {
   uintptr_t const boffset, eoffset;
   typedef unsigned int ui;

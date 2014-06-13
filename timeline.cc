@@ -203,16 +203,16 @@ TimeLine::restore_state( Point& _pos, Room& _room ) const
 };
 
 bool
-TimeLine::locate( date_t _date, Room _room, Point& _pos, bool& fire ) const
+TimeLine::locate( date_t& _date, Ghost& ghost ) const
 {
-  Map::const_iterator itr = m_map.lower_bound( _date );
-  if (itr == m_map.end()) { --itr; _date = itr->first; }
+  Map::const_iterator itr = m_map.begin();
   Chunk const& chunk = itr->second;
-  date_t offset = std::min( _date - itr->first, date_t( chunk.steps.size()-1 ) );
-  Character const& chr = chunk.steps[offset];
-  if (chunk.rooms[chr.room] != _room) return false;
-  _pos = Point( chr.xpos, chr.ypos );
-  fire = chr.fire;
+  date_t size = chunk.steps.size();
+  if (size <= 0) throw "NoNoNo";
+  Character const& chr = chunk.steps.back();
+  if (chunk.rooms[chr.room] != ghost.room) return false;
+  _date = itr->first + size - 1;
+  ghost.pos = Point( chr.xpos, chr.ypos );
   return true;
 }
 
@@ -232,21 +232,6 @@ TimeLine::updatebounds( date_t& lo, date_t& hi ) const
   hi = std::max( hi, itr->first + itr->second.steps.size());
   itr = m_map.end();
   lo = std::min( lo, (--itr)->first);
-}
-
-void
-TimeLine::getstorybounds( date_t& lo, date_t& hi ) const
-{
-  TimeLine const* tl = this;
-  lo = std::numeric_limits<date_t>::max();
-  hi = std::numeric_limits<date_t>::min();
-
-  do {
-    date_t llo,lhi;
-    tl->getbounds( llo, lhi );
-    if (lo > llo) lo = llo;
-    if (hi < lhi) hi = lhi;
-  } while (tl != this);
 }
 
 uintptr_t

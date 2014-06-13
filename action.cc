@@ -45,13 +45,15 @@ void Action::run()
       curroom->process( *this );
             
       this->blit( curpos, gallery::hero );
-    
+      
       for (TimeLine *tl = m_story.firstghost(), *eotl = m_story.active; tl != eotl; tl = tl->fwd())
         {
-          Point gpos;
-          bool gfire;
-          if (not tl->locate( m_story.now(), curroom, gpos, gfire )) continue;
-          this->blit( gpos, gallery::gray_ghost );
+          date_t now = m_story.now(), gdate;
+          Ghost ghost(curroom);
+          if (tl->match( now, ghost ))
+            this->blit( ghost.pos, gallery::gray_ghost );
+          if (tl->locate( gdate, ghost ))
+            this->blit( ghost.pos, (now < gdate) ? gallery::blue_ghost : gallery::red_ghost ); 
         }
       
       draw_timebar( tbs_point );
