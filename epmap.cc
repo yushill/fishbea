@@ -36,11 +36,14 @@ EPRoomBuf::process( Action& _action ) const
   for (int door = 0; door < 4; ++door )
     _action.blit( Point( 64, 96+64*door ), code.bit( door ) ? gallery::shiny_shell : gallery::shell );
   
+  static Point const exitpos( 576, 192 );
+  Point exitgap = _action.m_pos - exitpos;
+  int sqmodule = exitgap.m2();
+  bool fishexit = sqmodule <= 24*24;
+  _action.blit( exitpos, fishexit ? gallery::shiny_shell : gallery::shell );
+  
   if (code.value == m_code) {
-    static Point const exit( 576, 192 );
     // draw exit
-    bool fishexit = (_action.m_pos - exit).m2() <= 24*24;
-    _action.blit( exit, fishexit ? gallery::shiny_shell : gallery::shell );
     if (_action.fires() and fishexit)
       {
         _action.moveto( this->end_upcoming() );
@@ -48,9 +51,14 @@ EPRoomBuf::process( Action& _action ) const
         _action.fired();
         return;
       }
+    else
+      _action.normalmotion();
+  } else {
+    int const dev = (1 << 9);
+    int psqm = dev + sqmodule;
+    _action.biasedmotion( 16, exitgap*(float(16*dev*dev)/psqm/psqm) );
   }
   
-  _action.normalmotion();
 }
 
 Gate
