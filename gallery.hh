@@ -13,7 +13,7 @@ struct gallery
   static SDL_Surface* shiny_shell;
   static SDL_Surface* classic_bg;
   
-  static void __init__();
+  static void __init__( SDL_Surface* _screen );
   static void __exit__();
   
   static ImageStore __is__;

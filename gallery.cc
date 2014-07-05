@@ -13,7 +13,7 @@ SDL_Surface* gallery::classic_bg = 0;
 
 ImageStore gallery::__is__( gallery::__init__, gallery::__exit__ );
 
-void gallery::__init__()
+void gallery::__init__( SDL_Surface* _screen )
 {
   hero = load_image( "data/Nemo.png" );
   gray_ghost = SDL_ConvertSurface( hero, hero->format, hero->flags );

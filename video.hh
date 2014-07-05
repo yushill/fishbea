@@ -20,12 +20,15 @@ struct VideoConfig
 extern SDL_Surface* load_image( std::string filename );
 
 struct ImageStore {
-  typedef void (*action_t)();
-  action_t init_method, exit_method;
+  typedef void (*init_method_t)( SDL_Surface* _screen );
+  typedef void (*exit_method_t)();
+  init_method_t init_method;
+  exit_method_t exit_method;
   ImageStore* next;
   static ImageStore* pool;
-  ImageStore( action_t _init, action_t _exit ) : init_method( _init ), exit_method( _exit ), next( pool ) { pool = this; }
-  void init() { if (next) next->init(); init_method(); }
+  ImageStore( init_method_t _init, exit_method_t _exit )
+    : init_method( _init ), exit_method( _exit ), next( pool ) { pool = this; }
+  void init( SDL_Surface* _screen ) { if (next) next->init( _screen ); init_method( _screen ); }
   void exit() { exit_method(); if (next) next->exit(); }
 };
 
@@ -64,6 +67,11 @@ struct Redify { void operator() ( uint8_t* imgp ) const {
   imgp[1] = 0;
   imgp[2] = 0;
   imgp[3] /= 2;
+}};
+
+template <uint8_t R, uint8_t G, uint8_t B, uint8_t A>
+struct Fill { void operator() ( uint8_t* imgp ) const {
+  imgp[0] = R; imgp[1] = G; imgp[2] = B; imgp[3] = A;
 }};
 
 struct Fade {

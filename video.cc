@@ -17,7 +17,7 @@ VideoConfig::VideoConfig()
   if (not screen)
     throw std::runtime_error( std::string( "Can't set video mode: " ) + SDL_GetError() + "\n" );
     
-  ImageStore::pool->init();
+  ImageStore::pool->init( screen );
 }
   
 VideoConfig::~VideoConfig()
