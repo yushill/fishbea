@@ -2,7 +2,6 @@
 #define __DMMAP_HH__
 
 #include <map.hh>
-#include <new>
 
 struct DMRoomBuf : public RoomBuf
 {

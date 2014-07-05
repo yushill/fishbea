@@ -2,7 +2,6 @@
 #define __EPMAP_HH__
 
 #include <map.hh>
-#include <new>
 
 struct EPRoomBuf : public RoomBuf
 {
@@ -23,5 +22,19 @@ struct EPRoomBuf : public RoomBuf
   static Gate           start_incoming();
   static Gate           end_upcoming();
 };
+
+#include <video.hh>
+
+struct epgallery
+{
+  static SDL_Surface* repulsor;
+  static SDL_Surface* getrepulsor( uintptr_t date );
+  
+  static void __init__();
+  static void __exit__();
+  
+  static ImageStore __is__;
+};
+
 
 #endif /*__EPMAP_HH__*/

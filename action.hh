@@ -58,6 +58,7 @@ public:
   void moveto( Gate const& gate ) { m_room = gate.room; m_pos = gate.pos; }
   void normalmotion() { m_pos += m_control.motion()*16; }
   void biasedmotion( int _scale, Point const& _bias ) { m_pos += (m_control.motion()*_scale + _bias); }
+  date_t            now() const { return m_story.now(); }
   
   Story             m_story;
   Room              m_room;

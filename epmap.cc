@@ -54,6 +54,7 @@ EPRoomBuf::process( Action& _action ) const
     else
       _action.normalmotion();
   } else {
+    _action.blit( exitpos, epgallery::getrepulsor( _action.date ) );
     int const dev = (1 << 9);
     int psqm = dev + sqmodule;
     _action.biasedmotion( 16, exitgap*(float(16*dev*dev)/psqm/psqm) );
@@ -75,3 +76,56 @@ EPRoomBuf::getname() const
   return oss.str();
 }
 
+SDL_Surface* epgallery::repulsor = 0;
+
+ImageStore epgallery::__is__( epgallery::__init__, epgallery::__exit__ );
+
+void epgallery::__init__()
+{
+  hero = load_image( "data/Nemo.png" );
+  gray_ghost = SDL_ConvertSurface( hero, hero->format, hero->flags );
+  blue_ghost = SDL_ConvertSurface( hero, hero->format, hero->flags );
+  red_ghost = SDL_ConvertSurface( hero, hero->format, hero->flags );
+  image_apply( Ghostify(), gray_ghost );
+  image_apply( Blueify(), blue_ghost );
+  image_apply( Redify(), red_ghost );
+  shell = load_image( "data/door.png" );
+  shiny_shell =  SDL_ConvertSurface( shell, shell->format, shell->flags );
+  classic_bg = load_image( "data/background.png" );
+  image_apply( Hilite(), shiny_shell );
+  std::cerr << "Been here.\n";
+}
+
+void epgallery::__exit__()
+{
+  SDL_Surface* surfaces[] = {
+    hero,
+    gray_ghost,
+    blue_ghost,
+    red_ghost,
+    shell,
+    shiny_shell,
+    classic_bg
+  };
+  for (SDL_Surface** s = &surfaces[((sizeof surfaces) / (sizeof surfaces[0]))]; --s >= &surfaces[0];) {
+    if (*s) SDL_FreeSurface( *s );
+  }
+}
+
+SDL_Surface*
+epgallery::getrepulsor( uintptr_t date )
+{
+  uint8_t* img = (uint8_t*)repulsor->pixels;
+  for (int y = 0, ystop = repulsor->h; y < ystop; ++y) {
+    uint8_t* line = &img[y*repulsor->w*4];
+    for (int x = 0, xstop = repulsor->w; x < xstop; ++x) {
+      uint8_t* alpha = &line[x+3];
+      int sqd = (Point( x, y ) - Point( 320, 192 )).m2(); /* computing square distance */
+      if (sqd >= 128*128) { *alpha = 0; }
+      uint32_t decay = 256 - sqd/8/8;
+      uint32_t lum = (((163*((date << 22) - sqd*sqd))>>23)&0x1ff);
+      if (lum >= 0x100) { lum = 0x1ff - lum; }
+      *alpha = lum*decay;
+    }
+  }
+}
