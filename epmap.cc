@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <gallery.hh>
+#include <cmath>
 
 struct Code
 {
@@ -56,9 +57,12 @@ EPRoomBuf::process( Action& _action ) const
       _action.normalmotion();
   } else {
     _action.blit( exitpos, epgallery::getrepulsor( _action.now() ) );
-    int const dev = (1 << 9);
-    int psqm = dev + sqmodule;
-    _action.biasedmotion( 16, exitgap*(float(16*dev*dev)/psqm/psqm) );
+    float dist = sqrt( sqmodule );
+    float repulsion = pow( (sqmodule*sqmodule) + (2<<22), 0.25 )/dist - 1;
+    // int const dev = (1 << 9);
+    // int psqm = dev + sqmodule;
+    // _action.biasedmotion( 16, exitgap*(float(16*dev*dev)/psqm/psqm) );
+    _action.biasedmotion( 16, exitgap*repulsion );
   }
   
 }
