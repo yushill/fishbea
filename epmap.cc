@@ -42,7 +42,6 @@ EPRoomBuf::process( Action& _action ) const
   Point exitgap = _action.m_pos - exitpos;
   int sqmodule = exitgap.m2();
   bool fishexit = sqmodule <= 24*24;
-  _action.blit( exitpos, fishexit ? gallery::shiny_shell : gallery::shell );
   
   if (code.value == m_code) {
     // draw exit
@@ -56,15 +55,10 @@ EPRoomBuf::process( Action& _action ) const
     else
       _action.normalmotion();
   } else {
-    _action.blit( exitpos, epgallery::getrepulsor( _action.now() ) );
-    float dist = sqrt( sqmodule );
-    float repulsion = pow( (sqmodule*sqmodule) + (2<<22), 0.25 )/dist - 1;
-    // int const dev = (1 << 9);
-    // int psqm = dev + sqmodule;
-    // _action.biasedmotion( 16, exitgap*(float(16*dev*dev)/psqm/psqm) );
-    _action.biasedmotion( 16, exitgap*repulsion );
+    _action.blit( exitpos, repulsor::surface( _action.now() ) );
+    _action.biasedmotion( 16, repulsor::motion( exitgap ) );
   }
-  
+  _action.blit( exitpos, fishexit ? gallery::shiny_shell : gallery::shell );
 }
 
 Gate
@@ -81,40 +75,48 @@ EPRoomBuf::getname() const
   return oss.str();
 }
 
-SDL_Surface* epgallery::repulsor = 0;
+SDL_Surface* repulsor::__surface__ = 0;
+ImageStore repulsor::__is__( repulsor::__init__, repulsor::__exit__ );
 
-ImageStore epgallery::__is__( epgallery::__init__, epgallery::__exit__ );
-
-void epgallery::__init__( SDL_Surface* _screen )
+void repulsor::__init__( SDL_Surface* _screen )
 {
   SDL_Surface* tmp = SDL_DisplayFormatAlpha( _screen );
   tmp->w = 256;
   tmp->h = 256;
-  repulsor = SDL_DisplayFormatAlpha( tmp );
+  __surface__ = SDL_DisplayFormatAlpha( tmp );
   SDL_FreeSurface( tmp );
-  image_apply( Fill<0xff,0xff,0xff,0x0>(), repulsor );
+  image_apply( Fill<0xff,0xff,0xff,0x0>(), __surface__ );
 }
 
-void epgallery::__exit__()
+void repulsor::__exit__()
 {
-  SDL_FreeSurface( repulsor );
+  SDL_FreeSurface( __surface__ );
 }
 
 SDL_Surface*
-epgallery::getrepulsor( uintptr_t date )
+repulsor::surface( uintptr_t date )
 {
-  uint8_t* img = (uint8_t*)repulsor->pixels;
-  for (int y = 0, ystop = repulsor->h; y < ystop; ++y) {
-    uint8_t* line = &img[y*repulsor->w*4];
-    for (int x = 0, xstop = repulsor->w; x < xstop; ++x) {
+  uint8_t* img = (uint8_t*)__surface__->pixels;
+  for (int y = 0, ystop = __surface__->h; y < ystop; ++y) {
+    uint8_t* line = &img[y*__surface__->w*4];
+    for (int x = 0, xstop = __surface__->w; x < xstop; ++x) {
       uint8_t* alpha = &line[x*4+3];
       int sqd = (Point( x, y ) - Point( 128, 128 )).m2(); /* computing square distance */
       if (sqd >= 128*128) { *alpha = 0; continue; }
       uint32_t decay = 256 - sqd/8/8;
-      uint32_t lum = (((163*((date << 22) - sqd*sqd))>>23)&0x1ff);
+      uint32_t lum = (((160*((date*(1 << 22)) - sqd*sqd))>>23)&0x1ff);
       if (lum >= 0x100) { lum = 0x1ff - lum; }
       *alpha = lum*decay >> 8;
     }
   }
-  return repulsor;
+  return __surface__;
+}
+
+Point
+repulsor::motion( Point const& exitgap )
+{
+  int sqmodule = exitgap.m2();
+  float dist = sqrt( sqmodule );
+  float repulsion = pow( (sqmodule*sqmodule) + (2<<22), 0.25 )/dist - 1;
+  return exitgap*repulsion;
 }

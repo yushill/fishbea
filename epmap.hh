@@ -25,14 +25,13 @@ struct EPRoomBuf : public RoomBuf
 
 #include <video.hh>
 
-struct epgallery
+struct repulsor
 {
-  static SDL_Surface* repulsor;
-  static SDL_Surface* getrepulsor( uintptr_t date );
-  
+  static SDL_Surface* __surface__;
+  static SDL_Surface* surface( uintptr_t date );
+  static Point motion( Point const& exitgap );
   static void __init__( SDL_Surface* _screen );
   static void __exit__();
-  
   static ImageStore __is__;
 };
 
