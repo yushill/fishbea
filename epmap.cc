@@ -115,8 +115,8 @@ repulsor::surface( uintptr_t date )
 Point
 repulsor::motion( Point const& exitgap )
 {
-  int sqmodule = exitgap.m2();
+  float sqmodule = exitgap.m2();
   float dist = sqrt( sqmodule );
-  float repulsion = pow( (sqmodule*sqmodule) + (2<<22), 0.25 )/dist - 1;
+  float repulsion = pow( (sqmodule*sqmodule) + (1<<22), 0.25 )/dist - 1;
   return exitgap*repulsion;
 }
