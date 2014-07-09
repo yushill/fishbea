@@ -102,9 +102,10 @@ repulsor::surface( uintptr_t date )
     for (int x = 0, xstop = __surface__->w; x < xstop; ++x) {
       uint8_t* alpha = &line[x*4+3];
       int sqd = (Point( x, y ) - Point( 128, 128 )).m2(); /* computing square distance */
+      int dist = sqrt( sqd );
       if (sqd >= 128*128) { *alpha = 0; continue; }
       uint32_t decay = 256 - sqd/8/8;
-      uint32_t lum = (((160*((date*(1 << 22)) - sqd*sqd))>>23)&0x1ff);
+      uint32_t lum = (((6400*((date*(1 << 16)) - sqd*dist))>>23)&0x1ff);
       if (lum >= 0x100) { lum = 0x1ff - lum; }
       *alpha = lum*decay >> 8;
     }
@@ -117,6 +118,6 @@ repulsor::motion( Point const& exitgap )
 {
   float sqmodule = exitgap.m2();
   float dist = sqrt( sqmodule );
-  float repulsion = pow( (sqmodule*sqmodule) + (1<<22), 0.25 )/dist - 1;
+  float repulsion = pow( (sqmodule*dist) + (1<<16), 1./3. )/dist - 1;
   return exitgap*repulsion;
 }
