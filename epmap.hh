@@ -29,7 +29,7 @@ struct repulsor
 {
   static SDL_Surface* __surface__;
   static SDL_Surface* surface( uintptr_t date );
-  static Point motion( Point const& exitgap );
+  static Point motion( Point const& exitgap, uintptr_t date );
   static void __init__( SDL_Surface* _screen );
   static void __exit__();
   static ImageStore __is__;

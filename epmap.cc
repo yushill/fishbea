@@ -56,7 +56,7 @@ EPRoomBuf::process( Action& _action ) const
       _action.normalmotion();
   } else {
     _action.blit( exitpos, repulsor::surface( _action.now() ) );
-    _action.biasedmotion( 16, repulsor::motion( exitgap ) );
+    _action.biasedmotion( 16, repulsor::motion( exitgap, _action.now() ) );
   }
   _action.blit( exitpos, fishexit ? gallery::shiny_shell : gallery::shell );
 }
@@ -101,11 +101,11 @@ repulsor::surface( uintptr_t date )
     uint8_t* line = &img[y*__surface__->w*4];
     for (int x = 0, xstop = __surface__->w; x < xstop; ++x) {
       uint8_t* alpha = &line[x*4+3];
-      int sqd = (Point( x, y ) - Point( 128, 128 )).m2(); /* computing square distance */
+      int sqd = (Point( x, y ) - Point( 127, 127 )).m2(); /* computing square distance */
       int dist = sqrt( sqd );
       if (sqd >= 128*128) { *alpha = 0; continue; }
       uint32_t decay = 256 - sqd/8/8;
-      uint32_t lum = (((6400*((date*(1 << 16)) - sqd*dist))>>23)&0x1ff);
+      uint32_t lum = (((date*(1 << 16)) - sqd*dist)>>10) & 0x1ff;
       if (lum >= 0x100) { lum = 0x1ff - lum; }
       *alpha = lum*decay >> 8;
     }
@@ -114,10 +114,10 @@ repulsor::surface( uintptr_t date )
 }
 
 Point
-repulsor::motion( Point const& exitgap )
+repulsor::motion( Point const& exitgap, uintptr_t date )
 {
   float sqmodule = exitgap.m2();
   float dist = sqrt( sqmodule );
   float repulsion = pow( (sqmodule*dist) + (1<<16), 1./3. )/dist - 1;
-  return exitgap*repulsion;
+  return exitgap*repulsion+(dist < 64 ? Point( ((date + 0) >> 1) & 1, ((date + 1) >> 1) & 1 ) : Point());
 }
