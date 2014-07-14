@@ -9,6 +9,8 @@ SDL_Surface* gallery::blue_ghost = 0;
 SDL_Surface* gallery::red_ghost = 0;
 SDL_Surface* gallery::shell = 0;
 SDL_Surface* gallery::shiny_shell = 0;
+SDL_Surface* gallery::starfish = 0;
+SDL_Surface* gallery::shiny_starfish = 0;
 SDL_Surface* gallery::classic_bg = 0;
 
 ImageStore gallery::__is__( gallery::__init__, gallery::__exit__ );
@@ -24,9 +26,11 @@ void gallery::__init__( SDL_Surface* _screen )
   image_apply( Redify(), red_ghost );
   shell = load_image( "data/door.png" );
   shiny_shell =  SDL_ConvertSurface( shell, shell->format, shell->flags );
-  classic_bg = load_image( "data/background.png" );
   image_apply( Hilite(), shiny_shell );
-  std::cerr << "Been here.\n";
+  starfish = load_image( "data/starfish.png" );
+  shiny_starfish =  SDL_ConvertSurface( starfish, starfish->format, starfish->flags );
+  image_apply( Hilite(), shiny_starfish );
+  classic_bg = load_image( "data/background.png" );
 }
 
 void gallery::__exit__()
@@ -38,6 +42,8 @@ void gallery::__exit__()
     red_ghost,
     shell,
     shiny_shell,
+    starfish,
+    shiny_starfish,
     classic_bg
   };
   for (SDL_Surface** s = &surfaces[((sizeof surfaces) / (sizeof surfaces[0]))]; --s >= &surfaces[0];) {

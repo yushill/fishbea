@@ -56,7 +56,7 @@ void Action::run()
             this->blit( ghost.pos, (now < gdate) ? gallery::blue_ghost : gallery::red_ghost ); 
         }
       
-      draw_timebar( tbs_point );
+      draw_timebar( tbs_full );
       
       this->flipandwait();
     }

@@ -36,7 +36,7 @@ EPRoomBuf::process( Action& _action ) const
   // Scene Draw
   _action.blit( gallery::classic_bg );
   for (int door = 0; door < 4; ++door )
-    _action.blit( Point( 64, 96+64*door ), code.bit( door ) ? gallery::shiny_shell : gallery::shell );
+    _action.blit( Point( 64, 96+64*door ), code.bit( door ) ? gallery::shiny_starfish : gallery::starfish );
   
   static Point const exitpos( 480, 192 );
   Point exitgap = _action.m_pos - exitpos;
@@ -58,7 +58,7 @@ EPRoomBuf::process( Action& _action ) const
     _action.blit( exitpos, repulsor::surface( _action.now() ) );
     _action.biasedmotion( 16, repulsor::motion( exitgap, _action.now() ) );
   }
-  _action.blit( exitpos, fishexit ? gallery::shiny_shell : gallery::shell );
+  _action.blit( exitpos, fishexit ? gallery::shiny_starfish : gallery::starfish );
 }
 
 Gate
