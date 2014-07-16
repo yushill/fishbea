@@ -6,6 +6,7 @@
 #include <inttypes.h>
 #include <vector>
 #include <map>
+#include <iosfwd>
 
 typedef uint64_t date_t;
 
@@ -178,6 +179,7 @@ struct Story
     std::swap( active, node );
     return node->extract();
   }
+  std::ostream& writebounds( std::ostream& _sink ) const;
 };
 
 #endif /* __TIMELINE_HH__ */

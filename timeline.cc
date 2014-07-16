@@ -242,3 +242,10 @@ TimeLine::record_count() const
     res += itr->second.steps.size();
   return res;
 }
+
+std::ostream&
+Story::writebounds( std::ostream& _sink ) const
+{
+  _sink << '{' << bot << ',' << boa << ',' << eoa << ',' << eot << '}';
+  return _sink;
+}

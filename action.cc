@@ -27,13 +27,6 @@ void Action::run()
     m_control.collect();
     m_story.append( m_room, m_pos, m_control.fires() );
     
-    if (m_control.picks()) {
-      m_control.picked();
-      SDL_Surface* thumb = SDL_DisplayFormatAlpha( m_screen );
-      image_apply( Grayify(), thumb );
-      m_story.newbwd( m_room, m_pos, thumb );
-    }
-    
     if (m_control.jumps()) {
       this->jump();
     }
@@ -56,6 +49,13 @@ void Action::run()
             this->blit( ghost.pos, (now < gdate) ? gallery::blue_ghost : gallery::red_ghost ); 
         }
       
+      if (m_control.picks()) {
+        m_control.picked();
+        SDL_Surface* thumb = SDL_DisplayFormatAlpha( m_screen );
+        image_apply( Grayify(), thumb );
+        m_story.newbwd( m_room, m_pos, thumb );
+      }
+    
       draw_timebar( tbs_full );
       
       this->flipandwait();
@@ -69,10 +69,10 @@ Action::draw_timebar( Action::timebar_style tbs )
   if ((m_story.eoa > m_story.eot) or (m_story.boa < m_story.bot)) return;
   int beg, end;
   if (tbs == tbs_full)
-    beg = ((640-8)*m_story.boa/(m_story.eot-m_story.bot))+0;
+    beg = ((640-8)*(m_story.boa-m_story.bot)/(m_story.eot-m_story.bot))+0;
   else
-    beg = ((640-8)*m_story.eoa/(m_story.eot-m_story.bot))+0;
-  end = ((640-8)*m_story.eoa/(m_story.eot-m_story.bot))+8;
+    beg = ((640-8)*(m_story.eoa-m_story.bot)/(m_story.eot-m_story.bot))+0;
+  end = ((640-8)*(m_story.eoa-m_story.bot)/(m_story.eot-m_story.bot))+8;
   SDL_Rect bar;
   bar.x = beg;
   bar.y = 384-8;
@@ -136,6 +136,7 @@ Action::jump()
   }
   
   m_story.active->setthumb( thumb );
+  m_story.writebounds( std::cerr << "Bound before jump: " ) << std::endl;
     
   while (true) {
     SDL_Surface* curthumb = m_story.active->getthumb();
@@ -164,8 +165,7 @@ Action::jump()
       this->flipandwait();
     }
   }
-  // date_t bounds[2];
-  // m_timeline->getbounds( bounds );
+  m_story.writebounds( std::cerr << "Bound after jump: " ) << std::endl;
   m_story.active->restore_state( m_pos, m_room );
   std::cerr << "Jumping to room: " << m_room->getname() << ".\n";
   if (m_control.shift())
