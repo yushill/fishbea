@@ -89,6 +89,7 @@ struct TimeLine
   void          compress();
   void          restore_state( Point& _pos, Room& _room ) const;
   bool          locate( date_t& _date, Ghost& _pos ) const;
+  
   template <typename T>
   bool          match( date_t _date, T& _filter )
   {

@@ -41,7 +41,7 @@ void Action::run()
       
       for (TimeLine *tl = m_story.firstghost(), *eotl = m_story.active; tl != eotl; tl = tl->fwd())
         {
-          date_t now = m_story.now(), gdate;
+          date_t now = m_story.now(), gdate = now;
           Ghost ghost(curroom);
           if (tl->match( now, ghost ))
             this->blit( ghost.pos, gallery::gray_ghost );
