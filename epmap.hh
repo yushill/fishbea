@@ -25,6 +25,28 @@ struct EPRoomBuf : public RoomBuf
 
 #include <video.hh>
 
+template <uintptr_t WIDTH, uintptr_t HEIGHT>
+struct HydroField
+{
+  int32_t table[HEIGHT][WIDTH];
+  
+  int32_t getdx( uintptr_t x, uintptr_t y, uintptr_t date )
+  {
+    if ((y<=0) or (y>=(HEIGHT-1)) or (x<=0) or (x>=(WIDTH-1))) return 0x80000000;
+    int32_t vx0; if ((vx0 = table[y][x-1]) == 0x80000000) return 0x80000000;
+    int32_t vx1; if ((vx1 = table[y][x-1]) == 0x80000000) return 0x80000000;
+    return vx1-vx0;
+  }
+  int32_t getdy( uintptr_t x, uintptr_t y, uintptr_t date )
+  {
+    if ((y<=0) or (y>=(HEIGHT-1)) or (x<=0) or (x>=(WIDTH-1))) return 0x80000000;
+    int32_t vy0; if ((vy0 = table[y][x-1]) == 0x80000000) return 0x80000000;
+    int32_t vy1; if ((vy1 = table[y][x-1]) == 0x80000000) return 0x80000000;
+    return vy1-vy0;
+  }
+};
+
+
 struct repulsor
 {
   static SDL_Surface* __surface__;
@@ -33,6 +55,8 @@ struct repulsor
   static void __init__( SDL_Surface* _screen );
   static void __exit__();
   static ImageStore __is__;
+  
+  static HydroField<640,384> hf;
 };
 
 

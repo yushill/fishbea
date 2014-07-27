@@ -55,7 +55,7 @@ EPRoomBuf::process( Action& _action ) const
     else
       _action.normalmotion();
   } else {
-    _action.blit( exitpos, repulsor::surface( _action.now() ) );
+    _action.blit( repulsor::surface( _action.now() ) );
     _action.biasedmotion( 16, repulsor::motion( exitgap, _action.now() ) );
   }
   _action.blit( exitpos, fishexit ? gallery::shiny_starfish : gallery::starfish );
@@ -80,13 +80,25 @@ ImageStore repulsor::__is__( repulsor::__init__, repulsor::__exit__ );
 
 void repulsor::__init__( SDL_Surface* _screen )
 {
-  SDL_Surface* tmp = SDL_DisplayFormatAlpha( _screen );
-  tmp->w = 256;
-  tmp->h = 256;
-  __surface__ = SDL_DisplayFormatAlpha( tmp );
-  SDL_FreeSurface( tmp );
+  // SDL_Surface* tmp = SDL_DisplayFormatAlpha( _screen );
+  // tmp->w = 256;
+  // tmp->h = 256;
+  // __surface__ = SDL_DisplayFormatAlpha( tmp );
+  // SDL_FreeSurface( tmp );
+  __surface__ = SDL_DisplayFormatAlpha( _screen );
   image_apply( Fill<0xff,0xff,0xff,0x0>(), __surface__ );
+  
+  for (uintptr_t y = 0; y < 384; ++y) {
+    for (uintptr_t x = 0; x < 640; ++x) {
+      double dx = (479.5 - x);
+      double dy = (191.5 - y);
+      double norm = dx*dx + dy*dy;
+      hf.table[y][x] = (norm*sqrt( norm )/65536)*(1<<16);
+    }
+  }
 }
+
+HydroField<640,384> repulsor::hf;
 
 void repulsor::__exit__()
 {
@@ -101,12 +113,11 @@ repulsor::surface( uintptr_t date )
     uint8_t* line = &img[y*__surface__->w*4];
     for (int x = 0, xstop = __surface__->w; x < xstop; ++x) {
       uint8_t* alpha = &line[x*4+3];
-      int sqd = (Point( x, y ) - Point( 127, 127 )).m2(); /* computing square distance */
-      int dist = sqrt( sqd );
-      if (sqd >= 128*128) { *alpha = 0; continue; }
-      uint32_t decay = 256 - sqd/8/8;
-      uint32_t lum = (((date*(1 << 16)) - sqd*dist)>>10) & 0x1ff;
+      int32_t value = hf.table[y][x];
+      if ((value < 0) or (value > 32*(1<<16))) { *alpha = 0; continue; }
+      uint32_t lum = ((hf.table[y][x] - date*(1<<16)) >> 10) & 0x1ff;
       if (lum >= 0x100) { lum = 0x1ff - lum; }
+      int32_t decay = 256-value*8/(1<<16);
       *alpha = lum*decay >> 8;
     }
   }
