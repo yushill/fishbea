@@ -39,9 +39,7 @@ EPRoomBuf::process( Action& _action ) const
     _action.blit( Point( 64, 96+64*door ), code.bit( door ) ? gallery::shiny_starfish : gallery::starfish );
   
   static Point const exitpos( 480, 192 );
-  Point exitgap = _action.m_pos - exitpos;
-  int sqmodule = exitgap.m2();
-  bool fishexit = sqmodule <= 24*24;
+  bool fishexit = (_action.m_pos - exitpos).m2() <= 24*24;
   
   if (code.value == m_code) {
     // draw exit
@@ -56,7 +54,7 @@ EPRoomBuf::process( Action& _action ) const
       _action.normalmotion();
   } else {
     _action.blit( repulsor::surface( _action.now() ) );
-    _action.biasedmotion( 16, repulsor::motion( exitgap, _action.now() ) );
+    _action.biasedmotion( 16, repulsor::motion( _action.m_pos, _action.now() ) );
   }
   _action.blit( exitpos, fishexit ? gallery::shiny_starfish : gallery::starfish );
 }
@@ -98,7 +96,7 @@ void repulsor::__init__( SDL_Surface* _screen )
   }
 }
 
-HydroField<640,384> repulsor::hf;
+HydroMap<640,384> repulsor::hf;
 
 void repulsor::__exit__()
 {
@@ -125,10 +123,15 @@ repulsor::surface( uintptr_t date )
 }
 
 Point
-repulsor::motion( Point const& exitgap, uintptr_t date )
+repulsor::motion( Point const& pos, uintptr_t date )
 {
-  float sqmodule = exitgap.m2();
-  float dist = sqrt( sqmodule );
-  float repulsion = pow( (sqmodule*dist) + (1<<16), 1./3. )/dist - 1;
-  return exitgap*repulsion+(dist < 64 ? Point( ((date + 0) >> 1) & 1, ((date + 1) >> 1) & 1 ) : Point());
+  double dx, dy;
+  if (not hf.getdx( pos, dx )) return Point();
+  if (not hf.getdy( pos, dy )) return Point();
+  double module = sqrt( dx*dx + dy*dy );
+  if (module < 1e-6) return Point();
+  dx /= module; dy /= module;
+  module += 0.025;
+  dx /= module; dy /= module;
+  return Point( dx, dy );
 }
