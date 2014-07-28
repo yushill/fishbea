@@ -117,7 +117,7 @@ repulsor::surface( uintptr_t date )
       Point<float> g;
       if (not hf.grad( Point<int32_t>(x,y), g )) { *alpha = 0; continue; }
       double sqn = g.sqnorm();
-      int32_t decay = 256*std::max(1.-sqn*sqn, 0.) ;
+      int32_t decay = 256*std::max(1.-sqn, 0.) ;
       // int32_t decay = 256-value*8/(1<<16);
       *alpha = lum*decay >> 8;
     }
