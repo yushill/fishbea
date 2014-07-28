@@ -26,7 +26,7 @@ TimeLine::setthumb( SDL_Surface* _thumb )
 }
 
 void
-TimeLine::append( date_t date, Room const& _room, Point const& _position, bool _fire )
+TimeLine::append( date_t date, Room const& _room, Point<float> const& _position, bool _fire )
 {
   Map::iterator tail = m_map.begin();
   Chunk* chunk = &tail->second;
@@ -56,7 +56,7 @@ TimeLine::TimeLine( date_t date )
   this->update_usetime();
 }
 
-TimeLine::TimeLine( date_t date, Room const& _room, Point const& _position, bool _fire, SDL_Surface* thumb )
+TimeLine::TimeLine( date_t date, Room const& _room, Point<float> const& _position, bool _fire, SDL_Surface* thumb )
   : m_fwd(this), m_bwd(this), m_usetime(), m_thumb(thumb)
 {
   Chunk& chunk = m_map.insert( m_map.end(), std::make_pair( date, Chunk() ) )->second;
@@ -194,11 +194,11 @@ TimeLine::compress()
 }
 
 void
-TimeLine::restore_state( Point& _pos, Room& _room ) const
+TimeLine::restore_state( Point<float>& _pos, Room& _room ) const
 {
   Chunk const& chunk = m_map.begin()->second;
   Character const& chr = chunk.steps.back();
-  _pos = Point( chr.xpos, chr.ypos );
+  _pos = Point<float>( chr.xpos, chr.ypos );
   _room = chunk.rooms[chr.room];
 };
 
@@ -214,7 +214,7 @@ TimeLine::locate( date_t& _date, Ghost& ghost ) const
       Character const& chr = chunk.steps.back();
       if (chunk.rooms[chr.room] != ghost.room) return false;
       _date = (itr->first + size - 1);
-      ghost.pos = Point( chr.xpos, chr.ypos );
+      ghost.pos = Point<int32_t>( chr.xpos, chr.ypos );
       return true;
     }
   }
@@ -226,7 +226,7 @@ TimeLine::locate( date_t& _date, Ghost& ghost ) const
       Character const& chr = chunk.steps.front();
       if (chunk.rooms[chr.room] != ghost.room) return false;
       _date = itr->first;
-      ghost.pos = Point( chr.xpos, chr.ypos );
+      ghost.pos = Point<int32_t>( chr.xpos, chr.ypos );
       return true;
     }
   }

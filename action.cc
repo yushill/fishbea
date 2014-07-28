@@ -33,7 +33,7 @@ void Action::run()
     
     else {
       Room curroom( m_room );
-      Point curpos( m_pos );
+      Point<int32_t> curpos( m_pos.rebind<int32_t>() );
       
       curroom->process( *this );
             
@@ -156,8 +156,8 @@ Action::jump()
     SDL_Surface* nxtthumb = m_story.active->getthumb();
       
     for (int idx = 0; idx < 24; ++idx) {
-      Point cur( 320+((idx*dir)/24), 192 );
-      Point nxt( 320+(((idx - 24)*dir)/24), 192 );
+      Point<int32_t> cur( 320+((idx*dir)/24), 192 );
+      Point<int32_t> nxt( 320+(((idx - 24)*dir)/24), 192 );
         
       this->blit( cur, curthumb );
       this->blit( nxt, nxtthumb );
@@ -185,10 +185,10 @@ Action::jump()
 }
 
 void
-Action::blit( Point const& _pos, SDL_Surface* _src )
+Action::blit( Point<int32_t> const& _pos, SDL_Surface* _src )
 {
   SDL_Rect offset;
-  (_pos - (Point(_src->w, _src->h)/2)).pull( offset );
+  (_pos - (Point<int32_t>(_src->w, _src->h)/2)).pull( offset );
   
   SDL_BlitSurface( _src, NULL, m_screen, &offset );
 }
@@ -197,7 +197,7 @@ void
 Action::blit( SDL_Surface* _src )
 {
   SDL_Rect offset;
-  Point(0,0).pull( offset );
+  Point<int32_t>(0,0).pull( offset );
   
   SDL_BlitSurface( _src, NULL, m_screen, &offset );
 }

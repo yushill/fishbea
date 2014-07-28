@@ -11,12 +11,12 @@ struct Code
   Room room;
   uint32_t value;
   Code( Room _room ) : room(_room), value(0) {}
-  bool match( Room _room, Point const& _pos, bool fire )
+  bool match( Room _room, Point<int32_t> const& _pos, bool fire )
   {
     if (_room != room or not fire) return false;
     int idx = (_pos.m_y >> 6) - 1;
     if (idx < 0 or idx >= 4) return false;
-    if ((Point( _pos.m_x, _pos.m_y & 63 ) - Point(64,32)).m2() > 24*24) return false;
+    if ((Point<int32_t>( _pos.m_x, _pos.m_y & 63 ) - Point<int32_t>(64,32)).sqnorm() > 24*24) return false;
     value |= (1 << idx);
     return false;
   }
@@ -36,10 +36,10 @@ EPRoomBuf::process( Action& _action ) const
   // Scene Draw
   _action.blit( gallery::classic_bg );
   for (int door = 0; door < 4; ++door )
-    _action.blit( Point( 64, 96+64*door ), code.bit( door ) ? gallery::shiny_starfish : gallery::starfish );
+    _action.blit( Point<int32_t>( 64, 96+64*door ), code.bit( door ) ? gallery::shiny_starfish : gallery::starfish );
   
-  static Point const exitpos( 480, 192 );
-  bool fishexit = (_action.m_pos - exitpos).m2() <= 24*24;
+  static Point<float> const exitpos( 479.5, 191.5 );
+  bool fishexit = (_action.m_pos - exitpos).sqnorm() <= 24*24;
   
   if (code.value == m_code) {
     // draw exit
@@ -56,13 +56,13 @@ EPRoomBuf::process( Action& _action ) const
     _action.blit( repulsor::surface( _action.now() ) );
     _action.biasedmotion( 16, repulsor::motion( _action.m_pos, _action.now() ) );
   }
-  _action.blit( exitpos, fishexit ? gallery::shiny_starfish : gallery::starfish );
+  _action.blit( exitpos.rebind<int32_t>(), fishexit ? gallery::shiny_starfish : gallery::starfish );
 }
 
 Gate
 EPRoomBuf::start_incoming()
 {
-  return Gate( new EPRoomBuf( 0xa ), Point(320, 192) );
+  return Gate( new EPRoomBuf( 0xa ), Point<int32_t>(320, 192) );
 }
 
 std::string
@@ -88,10 +88,9 @@ void repulsor::__init__( SDL_Surface* _screen )
   
   for (uintptr_t y = 0; y < 384; ++y) {
     for (uintptr_t x = 0; x < 640; ++x) {
-      double dx = (479.5 - x);
-      double dy = (191.5 - y);
-      double norm = dx*dx + dy*dy;
-      hf.table[y][x] = (norm*sqrt( norm )/65536)*(1<<16);
+      Point<float> pos( 479.5-x, 191.5-y );
+      double sqnorm = pos.sqnorm();
+      hf.table[y][x] = sqnorm < 160*160 ? int32_t((sqnorm*sqrt( sqnorm )/65536)*(1<<16)) : int32_t( 0x80000000 );
     }
   }
 }
@@ -112,26 +111,26 @@ repulsor::surface( uintptr_t date )
     for (int x = 0, xstop = __surface__->w; x < xstop; ++x) {
       uint8_t* alpha = &line[x*4+3];
       int32_t value = hf.table[y][x];
-      if ((value < 0) or (value > 32*(1<<16))) { *alpha = 0; continue; }
-      uint32_t lum = ((hf.table[y][x] - date*(1<<16)) >> 10) & 0x1ff;
+      if (value == int32_t(0x80000000)) { *alpha = 0; continue; }
+      uint32_t lum = ((value - date*(1<<16)) >> 10) & 0x1ff;
       if (lum >= 0x100) { lum = 0x1ff - lum; }
-      int32_t decay = 256-value*8/(1<<16);
+      Point<float> g;
+      if (not hf.grad( Point<int32_t>(x,y), g )) { *alpha = 0; continue; }
+      double sqn = g.sqnorm();
+      int32_t decay = 256*std::max(1.-sqn*sqn, 0.) ;
+      // int32_t decay = 256-value*8/(1<<16);
       *alpha = lum*decay >> 8;
     }
   }
   return __surface__;
 }
 
-Point
-repulsor::motion( Point const& pos, uintptr_t date )
+Point<float>
+repulsor::motion( Point<float> const& pos, uintptr_t date )
 {
-  double dx, dy;
-  if (not hf.getdx( pos, dx )) return Point();
-  if (not hf.getdy( pos, dy )) return Point();
-  double module = sqrt( dx*dx + dy*dy );
-  if (module < 1e-6) return Point();
-  dx /= module; dy /= module;
-  module += 0.025;
-  dx /= module; dy /= module;
-  return Point( dx, dy );
+  Point<float> g;
+  if (not hf.grad( pos.rebind<int32_t>(), g )) return Point<float>();
+  double module = sqrt( g.sqnorm() );
+  if (module < 1e-6) return Point<float>();
+  return ((g / module) / (0.025 + module)).rebind<float>();
 }

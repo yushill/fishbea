@@ -4,7 +4,7 @@
 #include <sstream>
 #include <gallery.hh>
 
-Point
+Point<int32_t>
 DMRoomBuf::DMDoor::getpos() const
 {
   int seed = m_room->m_loc.m_x + m_room->m_loc.m_y*rad;
@@ -18,7 +18,7 @@ DMRoomBuf::DMDoor::getpos() const
     index = perms[index];
   }
   int a = index & 1, b = (index >> 1) & 1;
-  return Point( 320, 192 ) + Point( b - a, a + b - 1 )*96;
+  return Point<int32_t>( 320, 192 ) + Point<int32_t>( b - a, a + b - 1 )*96;
 }
 
 void
@@ -32,8 +32,8 @@ DMRoomBuf::process( Action& _action ) const
   _action.blit( gallery::classic_bg );
   for (DMDoor door = this->firstdoor(); door.next(); )
     {
-      Point pos = door.getpos();
-      if ((pos - _action.m_pos).m2() > 24*24) {
+      Point<int32_t> pos = door.getpos();
+      if ((pos.rebind<float>() - _action.m_pos).sqnorm() > 24*24) {
         _action.blit( pos, gallery::shell );
       } else {
         _action.blit( pos, gallery::shiny_shell );
@@ -56,7 +56,7 @@ DMRoomBuf::process( Action& _action ) const
 Gate
 DMRoomBuf::start_incoming()
 {
-  return Gate( new DMRoomBuf( Point() ), Point(50,50) );
+  return Gate( new DMRoomBuf( Point<int16_t>() ), Point<int32_t>(50,50) );
 }
 
 std::string

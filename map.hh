@@ -114,9 +114,9 @@ struct RecycleHeap {
 };
 
 struct Gate {
-  Room  room;
-  Point pos;
-  Gate( Room const& _room, Point const& _pos ) : room(_room), pos(_pos) {}
+  Room            room;
+  Point<int32_t>  pos;
+  Gate( Room const& _room, Point<int32_t> const& _pos ) : room(_room), pos(_pos) {}
 };
 
 #endif /* __MAP_HH__ */

@@ -20,17 +20,17 @@ struct Character
   uint32_t fire : 1;
   
   Character() {}
-  Character( unsigned int _room, Point const& _position, bool _fire )
+  Character( unsigned int _room, Point<float> const& _position, bool _fire )
     : xpos(_position.m_x), ypos(_position.m_y), room(_room), fire(_fire)
   {}
 };
 
 struct Ghost
 {
-  Room room;
-  Point pos;
+  Room           room;
+  Point<int32_t> pos;
   Ghost( Room _room ) : room(_room), pos() {}
-  bool match( Room _room, Point const& _pos, bool fire )
+  bool match( Room _room, Point<int32_t> const& _pos, bool fire )
   {
     if (_room != room) return false;
     pos = _pos;
@@ -46,11 +46,11 @@ struct TimeLine
     
     Chunk() : rooms(), steps() {}
     Chunk( Chunk const& chunk ) : rooms(chunk.rooms), steps(chunk.steps) {}
-    void append( Point const& _position, bool _fire )
+    void append( Point<float> const& _position, bool _fire )
     { steps.push_back( Character( rooms.size()-1, _position, _fire ) ); }
     void reserve()
     { rooms.reserve(128); steps.reserve(4096); }
-    void singleton( Room const& _room, Point const& _position, bool _fire )
+    void singleton( Room const& _room, Point<float> const& _position, bool _fire )
     {
       rooms.reserve(1); rooms.push_back( _room );
       steps.reserve(1); this->append( _position, _fire );
@@ -69,7 +69,7 @@ struct TimeLine
   
   // Contruction
   TimeLine( date_t date );
-  TimeLine( date_t date, Room const& _room, Point const& _position, bool _fire, SDL_Surface* thumb );
+  TimeLine( date_t date, Room const& _room, Point<float> const& _position, bool _fire, SDL_Surface* thumb );
   ~TimeLine();
   // No copies
   TimeLine( TimeLine const& _tl ) { throw "NoNoNo"; }
@@ -82,12 +82,12 @@ struct TimeLine
   TimeLine*     extract() { m_fwd->m_bwd = m_bwd; m_bwd->m_fwd = m_fwd; m_fwd = 0; m_bwd = 0; return this; }
   bool          single() const { return (m_fwd == this) and (m_bwd == this); }
   
-  void          append( date_t date, Room const& _room, Point const& _position, bool _fire );
+  void          append( date_t date, Room const& _room, Point<float> const& _position, bool _fire );
   void          setthumb( SDL_Surface* newthumb );
   SDL_Surface*  getthumb() { return m_thumb; };
   void          update_usetime();
   void          compress();
-  void          restore_state( Point& _pos, Room& _room ) const;
+  void          restore_state( Point<float>& _pos, Room& _room ) const;
   bool          locate( date_t& _date, Ghost& _pos ) const;
   
   template <typename T>
@@ -99,7 +99,7 @@ struct TimeLine
     date_t offset = _date - itr->first;
     if (offset >= chunk.steps.size()) return false;
     Character const& chr = chunk.steps[offset];
-    return _filter.match( chunk.rooms[chr.room], Point( chr.xpos, chr.ypos ), chr.fire );
+    return _filter.match( chunk.rooms[chr.room], Point<int32_t>( chr.xpos, chr.ypos ), chr.fire );
   }
   void          getbounds( date_t& lo, date_t& hi ) const;
   void          updatebounds( date_t& lo, date_t& hi ) const;
@@ -135,7 +135,7 @@ struct Story
   
   date_t now() const { return eoa - 1; }
   TimeLine* firstghost() { return active->fwd(); }
-  void newbwd( Room const& _room, Point const& _pos, SDL_Surface* thumb )
+  void newbwd( Room const& _room, Point<float> const& _pos, SDL_Surface* thumb )
   {
     active->insbwd( new TimeLine( now(), _room, _pos, false, thumb ) );
     record_count += 1;
@@ -144,13 +144,13 @@ struct Story
   
   void forward()
   {
-    Point loc;
+    Point<float> loc;
     Room room;
     active->restore_state( loc, room );
     while (eoa < eot) { append( room, loc, false ); }
   }
   
-  void append( Room const& _room, Point const& _pos, bool _fires )
+  void append( Room const& _room, Point<float> const& _pos, bool _fires )
   {
     if ((++record_count) >= record_count_max) throw "NoNoNo";
     active->append( eoa++, _room, _pos, _fires );
