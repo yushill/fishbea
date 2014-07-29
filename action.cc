@@ -16,10 +16,17 @@ Control::collect()
 }
 
 Action::Action( SDL_Surface* _screen )
-  : m_screen( _screen ),
+  : m_screen( _screen ), m_scratch( SDL_DisplayFormatAlpha( _screen ) ),
     m_next_ticks( SDL_GetTicks() + FramePeriod ),
     m_story(), m_room(), m_pos()
-{}
+{
+  image_apply( Fill<0xff,0xff,0xff,0x0>(), m_scratch );
+}
+
+Action::~Action()
+{
+  SDL_FreeSurface( m_scratch );
+}
 
 void Action::run()
 {

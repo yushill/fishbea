@@ -1,5 +1,6 @@
 #include <epmap.hh>
 #include <action.hh>
+#include <hydro.hh>
 #include <SDL/SDL.h>
 #include <iostream>
 #include <sstream>
@@ -53,8 +54,8 @@ EPRoomBuf::process( Action& _action ) const
     else
       _action.normalmotion();
   } else {
-    _action.blit( repulsor::surface( _action.now() ) );
-    _action.biasedmotion( 16, repulsor::motion( _action.m_pos, _action.now() ) );
+    hydro::effect( repulsor::hf.table, _action );
+    _action.biasedmotion( 16, hydro::motion( repulsor::hf.table, _action.m_pos, _action.now() ) );
   }
   _action.blit( exitpos.rebind<int32_t>(), fishexit ? gallery::shiny_starfish : gallery::starfish );
 }
@@ -78,11 +79,6 @@ ImageStore repulsor::__is__( repulsor::__init__, repulsor::__exit__ );
 
 void repulsor::__init__( SDL_Surface* _screen )
 {
-  // SDL_Surface* tmp = SDL_DisplayFormatAlpha( _screen );
-  // tmp->w = 256;
-  // tmp->h = 256;
-  // __surface__ = SDL_DisplayFormatAlpha( tmp );
-  // SDL_FreeSurface( tmp );
   __surface__ = SDL_DisplayFormatAlpha( _screen );
   image_apply( Fill<0xff,0xff,0xff,0x0>(), __surface__ );
   
@@ -102,35 +98,3 @@ void repulsor::__exit__()
   SDL_FreeSurface( __surface__ );
 }
 
-SDL_Surface*
-repulsor::surface( uintptr_t date )
-{
-  uint8_t* img = (uint8_t*)__surface__->pixels;
-  for (int y = 0, ystop = __surface__->h; y < ystop; ++y) {
-    uint8_t* line = &img[y*__surface__->w*4];
-    for (int x = 0, xstop = __surface__->w; x < xstop; ++x) {
-      uint8_t* alpha = &line[x*4+3];
-      int32_t value = hf.table[y][x];
-      if (value == int32_t(0x80000000)) { *alpha = 0; continue; }
-      uint32_t lum = ((value - date*(1<<16)) >> 10) & 0x1ff;
-      if (lum >= 0x100) { lum = 0x1ff - lum; }
-      Point<float> g;
-      if (not hf.grad( Point<int32_t>(x,y), g )) { *alpha = 0; continue; }
-      double sqn = g.sqnorm();
-      int32_t decay = 256*std::max(1.-sqn, 0.) ;
-      // int32_t decay = 256-value*8/(1<<16);
-      *alpha = lum*decay >> 8;
-    }
-  }
-  return __surface__;
-}
-
-Point<float>
-repulsor::motion( Point<float> const& pos, uintptr_t date )
-{
-  Point<float> g;
-  if (not hf.grad( pos.rebind<int32_t>(), g )) return Point<float>();
-  double module = sqrt( g.sqnorm() );
-  if (module < 1e-6) return Point<float>();
-  return ((g / module) / (0.025 + module)).rebind<float>();
-}

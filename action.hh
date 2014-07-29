@@ -35,6 +35,7 @@ struct Control
 struct Action
 {
   Action( SDL_Surface* _screen );
+  ~Action();
   
   // Gamer interaction
   void run();
@@ -46,9 +47,11 @@ struct Action
   void fired() { m_control.fired(); }
   void blit( Point<int32_t> const& _pos, SDL_Surface* _src );
   void blit( SDL_Surface* _src );
+  SDL_Surface* scratch( SDL_Surface* _scratch=0 ) { return m_scratch; }
 
 private:  
   SDL_Surface*      m_screen;
+  SDL_Surface*      m_scratch;
   static const int  FramePeriod = 40;
   int               m_next_ticks;
   Control           m_control;

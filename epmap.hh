@@ -30,17 +30,6 @@ struct HydroMap
 {
   int32_t table[HEIGHT][WIDTH];
   
-  bool grad( Point<int32_t> const& pos, Point<float>& _grad )
-  {
-    if ((pos.m_y<=0) or (pos.m_y>=(HEIGHT-1)) or (pos.m_x<=0) or (pos.m_x>=(WIDTH-1))) return false;
-    int32_t vx0; if ((vx0 = table[pos.m_y][pos.m_x-1]) == 0x80000000) return false;
-    int32_t vx1; if ((vx1 = table[pos.m_y][pos.m_x+1]) == 0x80000000) return false;
-    int32_t vy0; if ((vy0 = table[pos.m_y-1][pos.m_x]) == 0x80000000) return false;
-    int32_t vy1; if ((vy1 = table[pos.m_y+1][pos.m_x]) == 0x80000000) return false;
-    _grad.m_x = double( vx1-vx0 ) / 2 / double( 1<<16 );
-    _grad.m_y = double( vy1-vy0 ) / 2 / double( 1<<16 );
-    return true;
-  }
 };
 
 
