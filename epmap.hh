@@ -21,29 +21,7 @@ struct EPRoomBuf : public RoomBuf
   uint32_t              m_code;
   static Gate           start_incoming();
   static Gate           end_upcoming();
-};
-
-#include <video.hh>
-
-template <uintptr_t WIDTH, uintptr_t HEIGHT>
-struct HydroMap
-{
-  int32_t table[HEIGHT][WIDTH];
   
 };
-
-
-struct repulsor
-{
-  static SDL_Surface* __surface__;
-  static SDL_Surface* surface( uintptr_t date );
-  static Point<float> motion( Point<float> const& pos, uintptr_t date );
-  static void __init__( SDL_Surface* _screen );
-  static void __exit__();
-  static ImageStore __is__;
-  
-  static HydroMap<640,384> hf;
-};
-
 
 #endif /*__EPMAP_HH__*/

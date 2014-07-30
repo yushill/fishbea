@@ -9,7 +9,8 @@
 
 struct SDL_Surface;
 
-namespace hydro {
+namespace hydro
+{
 
   template <typename mapT>
   bool grad( mapT const& _table, Point<int32_t> const& pos, Point<float>& _grad )
@@ -25,42 +26,44 @@ namespace hydro {
   }
 
 
-template <typename mapT, typename actionT>
-void effect( mapT const& _table, actionT& _action )
-{
-  SDL_Surface* scratch = _action.scratch();
-  date_t date = _action.now();
-  uint8_t* img = (uint8_t*)scratch->pixels;
-  for (int y = 0, ystop = scratch->h; y < ystop; ++y) {
-    uint8_t* line = &img[y*scratch->w*4];
-    for (int x = 0, xstop = scratch->w; x < xstop; ++x) {
-      uint8_t* alpha = &line[x*4+3];
-      int32_t value = _table[y][x];
-      if (value == int32_t(0x80000000)) { *alpha = 0; continue; }
-      uint32_t lum = ((value - date*(1<<16)) >> 10) & 0x1ff;
-      if (lum >= 0x100) { lum = 0x1ff - lum; }
-      Point<float> g;
-      if (not grad( _table, Point<int32_t>(x,y), g )) { *alpha = 0; continue; }
-      double sqn = g.sqnorm();
-      int32_t decay = 256*std::max(1.-sqn, 0.) ;
-      // int32_t decay = 256-value*8/(1<<16);
-      *alpha = lum*decay >> 8;
+  template <typename mapT, typename actionT>
+  void effect( mapT const& _table, actionT& _action )
+  {
+    SDL_Surface* scratch = _action.scratch();
+    date_t date = _action.now();
+    uint8_t* img = (uint8_t*)scratch->pixels;
+    for (int y = 0, ystop = scratch->h; y < ystop; ++y) {
+      uint8_t* line = &img[y*scratch->w*4];
+      for (int x = 0, xstop = scratch->w; x < xstop; ++x) {
+        uint8_t* pix = &line[x*4];
+        pix[0] = 0xff;pix[1] = 0xff;pix[2] = 0xff;pix[3] = 0xff;
+        uint8_t* alpha = &pix[3];
+        int32_t value = _table[y][x];
+        if (value == int32_t(0x80000000)) { *alpha = 0; continue; }
+        uint32_t lum = ((value - date*(1<<16)) >> 10) & 0x1ff;
+        if (lum >= 0x100) { lum = 0x1ff - lum; }
+        Point<float> g;
+        if (not grad( _table, Point<int32_t>(x,y), g )) { *alpha = 0; continue; }
+        double sqn = g.sqnorm();
+        int32_t decay = 256*std::max(1.-sqn, 0.) ;
+        // int32_t decay = 256-value*8/(1<<16);
+        *alpha = lum*decay >> 8;
+      }
     }
+
+    _action.blit( _action.scratch( scratch ) );
   }
 
-  _action.blit( _action.scratch( scratch ) );
-}
-
-template <typename mapT>
-Point<float>
-motion( mapT const& _table, Point<float> const& pos, uintptr_t date )
-{
-  Point<float> g;
-  if (not grad( _table, pos.rebind<int32_t>(), g )) return Point<float>();
-  double module = ::sqrt( g.sqnorm() );
-  if (module < 1e-6) return Point<float>();
-  return ((g / module) / (0.025 + module)).rebind<float>();
-}
+  template <typename mapT>
+  Point<float>
+  motion( mapT const& _table, Point<float> const& pos, uintptr_t date )
+  {
+    Point<float> g;
+    if (not grad( _table, pos.rebind<int32_t>(), g )) return Point<float>();
+    double module = ::sqrt( g.sqnorm() );
+    if (module < 1e-6) return Point<float>();
+    return ((g / module) / (0.025 + module)).rebind<float>();
+  }
 
 };
 

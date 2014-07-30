@@ -1,5 +1,6 @@
 #include <epmap.hh>
 #include <action.hh>
+#include <video.hh>
 #include <hydro.hh>
 #include <SDL/SDL.h>
 #include <iostream>
@@ -7,21 +8,38 @@
 #include <gallery.hh>
 #include <cmath>
 
-struct Code
-{
-  Room room;
-  uint32_t value;
-  Code( Room _room ) : room(_room), value(0) {}
-  bool match( Room _room, Point<int32_t> const& _pos, bool fire )
+namespace {
+  struct EpHydroMap
   {
-    if (_room != room or not fire) return false;
-    int idx = (_pos.m_y >> 6) - 1;
-    if (idx < 0 or idx >= 4) return false;
-    if ((Point<int32_t>( _pos.m_x, _pos.m_y & 63 ) - Point<int32_t>(64,32)).sqnorm() > 24*24) return false;
-    value |= (1 << idx);
-    return false;
-  }
-  bool bit( int idx ) { return (value >> idx) & 1; }
+    int32_t table[VideoConfig::height][VideoConfig::width];
+    EpHydroMap()
+    {
+      for (uintptr_t y = 0; y < VideoConfig::height; ++y) {
+        for (uintptr_t x = 0; x < VideoConfig::width; ++x) {
+          Point<float> pos( 479.5-x, 191.5-y );
+          double sqnorm = pos.sqnorm();
+          table[y][x] = sqnorm < 160*160 ? int32_t((sqnorm*sqrt( sqnorm )/65536)*(1<<16)) : int32_t( 0x80000000 );
+        }
+      }
+    }
+  } ehm;
+
+  struct Code
+  {
+    Room room;
+    uint32_t value;
+    Code( Room _room ) : room(_room), value(0) {}
+    bool match( Room _room, Point<int32_t> const& _pos, bool fire )
+    {
+      if (_room != room or not fire) return false;
+      int idx = (_pos.m_y >> 6) - 1;
+      if (idx < 0 or idx >= 4) return false;
+      if ((Point<int32_t>( _pos.m_x, _pos.m_y & 63 ) - Point<int32_t>(64,32)).sqnorm() > 24*24) return false;
+      value |= (1 << idx);
+      return false;
+    }
+    bool bit( int idx ) { return (value >> idx) & 1; }
+  };
 };
 
 void
@@ -54,8 +72,8 @@ EPRoomBuf::process( Action& _action ) const
     else
       _action.normalmotion();
   } else {
-    hydro::effect( repulsor::hf.table, _action );
-    _action.biasedmotion( 16, hydro::motion( repulsor::hf.table, _action.m_pos, _action.now() ) );
+    hydro::effect( ehm.table, _action );
+    _action.biasedmotion( 16, hydro::motion( ehm.table, _action.m_pos, _action.now() ) );
   }
   _action.blit( exitpos.rebind<int32_t>(), fishexit ? gallery::shiny_starfish : gallery::starfish );
 }
@@ -74,27 +92,4 @@ EPRoomBuf::getname() const
   return oss.str();
 }
 
-SDL_Surface* repulsor::__surface__ = 0;
-ImageStore repulsor::__is__( repulsor::__init__, repulsor::__exit__ );
-
-void repulsor::__init__( SDL_Surface* _screen )
-{
-  __surface__ = SDL_DisplayFormatAlpha( _screen );
-  image_apply( Fill<0xff,0xff,0xff,0x0>(), __surface__ );
-  
-  for (uintptr_t y = 0; y < 384; ++y) {
-    for (uintptr_t x = 0; x < 640; ++x) {
-      Point<float> pos( 479.5-x, 191.5-y );
-      double sqnorm = pos.sqnorm();
-      hf.table[y][x] = sqnorm < 160*160 ? int32_t((sqnorm*sqrt( sqnorm )/65536)*(1<<16)) : int32_t( 0x80000000 );
-    }
-  }
-}
-
-HydroMap<640,384> repulsor::hf;
-
-void repulsor::__exit__()
-{
-  SDL_FreeSurface( __surface__ );
-}
 
