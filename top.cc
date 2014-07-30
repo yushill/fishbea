@@ -2,6 +2,7 @@
 #include <action.hh>
 #include <dmmap.hh>
 #include <epmap.hh>
+#include <totomap.hh>
 
 int
 main( int argc, char** argv )
