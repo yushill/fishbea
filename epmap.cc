@@ -73,7 +73,7 @@ EPRoomBuf::process( Action& _action ) const
       _action.normalmotion();
   } else {
     hydro::effect( ehm.table, _action );
-    _action.biasedmotion( 16, hydro::motion( ehm.table, _action.m_pos, _action.now() ) );
+    _action.biasedmotion( 16, hydro::motion( ehm.table, _action ) );
   }
   _action.blit( exitpos.rebind<int32_t>(), fishexit ? gallery::shiny_starfish : gallery::starfish );
 }

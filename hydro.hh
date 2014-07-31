@@ -45,7 +45,7 @@ namespace hydro
         Point<float> g;
         if (not grad( _table, Point<int32_t>(x,y), g )) { *alpha = 0; continue; }
         double sqn = g.sqnorm();
-        int32_t decay = 256*std::max(1.-sqn, 0.) ;
+        int32_t decay = 128*std::max(1.-sqn, 0.) ;
         // int32_t decay = 256-value*8/(1<<16);
         *alpha = lum*decay >> 8;
       }
@@ -54,11 +54,12 @@ namespace hydro
     _action.blit( _action.scratch( scratch ) );
   }
 
-  template <typename mapT>
+  template <typename mapT, typename actionT>
   Point<float>
-  motion( mapT const& _table, Point<float> const& pos, uintptr_t date )
+  motion( mapT const& _table, actionT& _action )
   {
     Point<float> g;
+    Point<float> const& pos =_action.m_pos;
     if (not grad( _table, pos.rebind<int32_t>(), g )) return Point<float>();
     double module = ::sqrt( g.sqnorm() );
     if (module < 1e-6) return Point<float>();
