@@ -75,7 +75,7 @@ EPRoomBuf::process( Action& _action ) const
     hydro::effect( ehm.table, _action );
     _action.biasedmotion( 16, hydro::motion( ehm.table, _action ) );
   }
-  _action.blit( exitpos.rebind<int32_t>(), fishexit ? gallery::shiny_starfish : gallery::starfish );
+  _action.blit( exitpos.rebind<int32_t>(), fishexit ? gallery::shiny_shell : gallery::shell );
 }
 
 Gate
