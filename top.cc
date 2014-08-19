@@ -3,6 +3,7 @@
 #include <dmmap.hh>
 #include <epmap.hh>
 #include <expmap.hh>
+#include <slideroom.hh>
 
 int
 main( int argc, char** argv )
