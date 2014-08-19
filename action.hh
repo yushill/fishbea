@@ -24,6 +24,8 @@ struct Control
   void            fired() { m_keys[SDLK_SPACE] = false; }
   bool            jumps() const { return m_keys[SDLK_ESCAPE] or m_keys[SDLK_TAB]; }
   Point<float>    motion() const { return Point<float>( int(m_keys[SDLK_RIGHT])-int(m_keys[SDLK_LEFT]), int(m_keys[SDLK_DOWN])-int(m_keys[SDLK_UP]) ); }
+  int             horizontal() const { return int(m_keys[SDLK_RIGHT])-int(m_keys[SDLK_LEFT]); }
+  int             vertical() const { return int(m_keys[SDLK_DOWN])-int(m_keys[SDLK_UP]); }
   bool            right() const { return m_keys[SDLK_RIGHT]; }
   bool            left() const { return m_keys[SDLK_LEFT]; }
   bool            delfwd() const { return m_keys[SDLK_DELETE]; }
@@ -53,14 +55,21 @@ private:
   SDL_Surface*      m_screen;
   SDL_Surface*      m_scratch;
   static const int  FramePeriod = 40;
+  static const int  FastMotion = 16;
+  static const int  SlowMotion = 1;
   int               m_next_ticks;
   Control           m_control;
   
 public:
   // Engine
   void moveto( Gate const& gate ) { m_room = gate.room; m_pos = Point<float>( gate.pos.m_x, gate.pos.m_y ); }
-  void normalmotion() { m_pos += m_control.motion()*16; }
-  void biasedmotion( int _scale, Point<float> const& _bias ) { m_pos += (m_control.motion()*_scale + _bias); }
+  void normalmotion() { m_pos += getmove(); }
+  void biasedmotion( Point<float> const& _bias ) { m_pos += (getmove() + _bias); }
+  Point<float>      getmove() const {
+    int speed = m_control.shift() ? SlowMotion : FastMotion;
+    return Point<float>( m_control.horizontal()*speed, m_control.vertical()*speed );
+  }
+  
   date_t            now() const { return m_story.now(); }
   
   Story             m_story;

@@ -11,14 +11,14 @@
 namespace {
   struct EpHydroMap
   {
-    int32_t table[VideoConfig::height][VideoConfig::width];
+    hydro::Delay table[VideoConfig::height][VideoConfig::width];
     EpHydroMap()
     {
       for (uintptr_t y = 0; y < VideoConfig::height; ++y) {
         for (uintptr_t x = 0; x < VideoConfig::width; ++x) {
           Point<float> pos( 479.5-x, 191.5-y );
           double sqnorm = pos.sqnorm();
-          table[y][x] = sqnorm < 160*160 ? int32_t((sqnorm*sqrt( sqnorm )/65536)*(1<<16)) : int32_t( 0x80000000 );
+          table[y][x].set( sqnorm < 160*160 ? (sqnorm*sqrt( sqnorm )/65536) : nan("") );
         }
       }
     }
@@ -73,7 +73,7 @@ EPRoomBuf::process( Action& _action ) const
       _action.normalmotion();
   } else {
     hydro::effect( ehm.table, _action );
-    _action.biasedmotion( 16, hydro::motion( ehm.table, _action ) );
+    _action.biasedmotion( hydro::motion( ehm.table, _action ) );
   }
   _action.blit( exitpos.rebind<int32_t>(), fishexit ? gallery::shiny_shell : gallery::shell );
 }
