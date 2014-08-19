@@ -24,3 +24,5 @@ main( int argc, char** argv )
 
 // Map connections
 Gate EPRoomBuf::end_upcoming() { return DMRoomBuf::start_incoming(); }
+Gate DMRoomBuf::end_upcoming() { return ExpRoomBuf::start_incoming(); }
+Gate DMRoomBuf::start_upcoming() { return EPRoomBuf::start_incoming(); }

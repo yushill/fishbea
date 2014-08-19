@@ -21,7 +21,6 @@ struct EPRoomBuf : public RoomBuf
   uint32_t              m_code;
   static Gate           start_incoming();
   static Gate           end_upcoming();
-  
 };
 
 #endif /*__EPMAP_HH__*/
