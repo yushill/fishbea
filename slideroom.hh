@@ -15,6 +15,8 @@ struct SlideRoomBuf : public RoomBuf
   int                   cmp( RoomBuf const& _rb ) const { return 0; }
   
   static Gate           start_incoming();
+  static Gate           end_incoming();
+  static Gate           start_upcoming();
   static Gate           end_upcoming();
 };
 

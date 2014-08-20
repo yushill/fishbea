@@ -12,7 +12,7 @@ main( int argc, char** argv )
   
   Action action( vc.screen );
   
-  action.moveto( EPRoomBuf::start_incoming() );
+  action.moveto( SlideRoomBuf::start_incoming() );
   
   std::cerr << "Rolling!!!\n";
   
@@ -25,5 +25,7 @@ main( int argc, char** argv )
 
 // Map connections
 Gate EPRoomBuf::end_upcoming() { return DMRoomBuf::start_incoming(); }
-Gate DMRoomBuf::end_upcoming() { return ExpRoomBuf::start_incoming(); }
 Gate DMRoomBuf::start_upcoming() { return EPRoomBuf::start_incoming(); }
+Gate DMRoomBuf::end_upcoming() { return ExpRoomBuf::start_incoming(); }
+Gate SlideRoomBuf::start_upcoming() { return SlideRoomBuf::start_incoming(); }
+Gate SlideRoomBuf::end_upcoming() { return EPRoomBuf::start_incoming(); }

@@ -7,6 +7,7 @@
 #include <SDL/SDL_keysym.h>
 #include <bitset>
 #include <iosfwd>
+#include <cmath>
 
 struct Control
 {
@@ -23,7 +24,12 @@ struct Control
   bool            fires() const { return m_keys[SDLK_SPACE]; }
   void            fired() { m_keys[SDLK_SPACE] = false; }
   bool            jumps() const { return m_keys[SDLK_ESCAPE] or m_keys[SDLK_TAB]; }
-  Point<float>    motion() const { return Point<float>( int(m_keys[SDLK_RIGHT])-int(m_keys[SDLK_LEFT]), int(m_keys[SDLK_DOWN])-int(m_keys[SDLK_UP]) ); }
+  template <typename PT, typename INT>
+  void            move( PT& _, INT speed ) const
+  {
+    _.m_x += speed*(int32_t(m_keys[SDLK_RIGHT])-int32_t(m_keys[SDLK_LEFT]));
+    _.m_y += speed*(int32_t(m_keys[SDLK_DOWN])-int32_t(m_keys[SDLK_UP]));
+  }
   int             horizontal() const { return int(m_keys[SDLK_RIGHT])-int(m_keys[SDLK_LEFT]); }
   int             vertical() const { return int(m_keys[SDLK_DOWN])-int(m_keys[SDLK_UP]); }
   bool            right() const { return m_keys[SDLK_RIGHT]; }
@@ -63,11 +69,19 @@ private:
 public:
   // Engine
   void moveto( Gate const& gate ) { m_room = gate.room; m_pos = Point<float>( gate.pos.m_x, gate.pos.m_y ); }
-  void normalmotion() { m_pos += getmove(); }
-  void biasedmotion( Point<float> const& _bias ) { m_pos += (getmove() + _bias); }
-  Point<float>      getmove() const {
-    int speed = m_control.shift() ? SlowMotion : FastMotion;
-    return Point<float>( m_control.horizontal()*speed, m_control.vertical()*speed );
+  void normalmotion()
+  {
+    int32_t hor = m_control.horizontal();
+    int32_t ver = m_control.vertical();
+    float speed = m_control.shift() ? SlowMotion : FastMotion;
+    if (hor & ver) speed *= M_SQRT1_2;
+    m_pos.m_x += speed*hor;
+    m_pos.m_y += speed*ver;
+  }
+  void biasedmotion( Point<float> const& _bias )
+  {
+    normalmotion();
+    m_pos += _bias;
   }
   
   date_t            now() const { return m_story.now(); }
