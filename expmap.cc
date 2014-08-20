@@ -49,6 +49,17 @@ namespace {
   } thm;
 };
 
+struct ExpRoomBuf : public virtual RoomBuf
+{
+  ExpRoomBuf() {}
+  ExpRoomBuf( ExpRoomBuf const& _room ) { throw "NoNoNo"; }
+  virtual ~ExpRoomBuf() {}
+  
+  std::string           getname() const { return "ExpRoom"; }
+  void                  process( Action& _action ) const;
+  int                   cmp( RoomBuf const& _rb ) const { return 0; }
+};
+
 void
 ExpRoomBuf::process( Action& _action ) const
 {
@@ -59,8 +70,4 @@ ExpRoomBuf::process( Action& _action ) const
   _action.biasedmotion( hydro::motion( thm.table, _action ) );
 }
 
-Gate
-ExpRoomBuf::start_incoming()
-{
-  return Gate( new ExpRoomBuf, Point<int32_t>(50, 50) );
-}
+Gate ExpMap::start_incoming() { return Gate( new ExpRoomBuf, Point<int32_t>(50, 50) ); }

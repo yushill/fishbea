@@ -3,21 +3,12 @@
 
 #include <map.hh>
 
-struct SlideRoomBuf : public RoomBuf
+namespace SlideMap
 {
-  SlideRoomBuf() {}
-  SlideRoomBuf( SlideRoomBuf const& _room ) { throw "NoNoNo"; }
-  virtual ~SlideRoomBuf() {}
-  
-  void                  dispose() const { delete this; }
-  std::string           getname() const { return "SlideRoom"; }
-  void                  process( Action& _action ) const;
-  int                   cmp( RoomBuf const& _rb ) const { return 0; }
-  
-  static Gate           start_incoming();
-  static Gate           end_incoming();
-  static Gate           start_upcoming();
-  static Gate           end_upcoming();
+  extern Gate start_incoming();
+  extern Gate end_incoming();
+  extern Gate start_upcoming();
+  extern Gate end_upcoming();
 };
 
 #endif /*__SLIDEROOM_HH__*/

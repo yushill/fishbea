@@ -4,6 +4,21 @@
 #include <sstream>
 #include <gallery.hh>
 
+struct DMRoomBuf : public virtual RoomBuf
+{
+  static int32_t const  MySide = 4;
+  int32_t               m_index;
+  
+  explicit DMRoomBuf( int32_t _index ) : m_index( (_index+MySide*MySide)%(MySide*MySide) ) {}
+  DMRoomBuf( DMRoomBuf const& _room ) { throw "NoNoNo"; }
+  virtual ~DMRoomBuf() {};
+  
+  int cmp( RoomBuf const& _rb ) const { return tgcmp( m_index, dynamic_cast<DMRoomBuf const&>( _rb ).m_index ); }
+  
+  std::string           getname() const;
+  void                  process( Action& _action ) const;
+};
+
 namespace
 {
   template <typename int_type>
@@ -78,8 +93,8 @@ DMRoomBuf::process( Action& _action ) const
     
   if (active.m_room and _action.fires())
     {
-      if ((m_index == (MySide*MySide-1)) and (active.m_index == 3)) _action.moveto( DMRoomBuf::end_upcoming() );
-      else if ((m_index == 0) and (active.m_index == 0))            _action.moveto( DMRoomBuf::start_upcoming() );
+      if ((m_index == (MySide*MySide-1)) and (active.m_index == 3)) _action.moveto( DMMap::end_upcoming() );
+      else if ((m_index == 0) and (active.m_index == 0))            _action.moveto( DMMap::start_upcoming() );
       else                                                          _action.moveto( active.destination() );
       std::cerr << "Entering room: " << _action.m_room->getname() << ".\n";
       _action.fired();
@@ -89,16 +104,6 @@ DMRoomBuf::process( Action& _action ) const
     _action.normalmotion();
 }
 
-Gate DMRoomBuf::start_incoming() {
-  DMRoomBuf* r = new DMRoomBuf( 0 );
-  return Gate( r, DMDoor( r, 0 ).getpos() );
-}
-
-Gate DMRoomBuf::end_incoming() {
-  DMRoomBuf* r = new DMRoomBuf( -1 );
-  return Gate( r, DMDoor( r, 3 ).getpos() );
-}
-
 std::string
 DMRoomBuf::getname() const
 {
@@ -106,3 +111,7 @@ DMRoomBuf::getname() const
   oss << "DiamondRoom[" << m_index << "]";
   return oss.str();
 }
+
+Gate DMMap::start_incoming() { DMRoomBuf* r = new DMRoomBuf( 0 ); return Gate( r, DMDoor( r, 0 ).getpos() ); }
+Gate DMMap::end_incoming() { DMRoomBuf* r = new DMRoomBuf( -1 ); return Gate( r, DMDoor( r, 3 ).getpos() ); }
+

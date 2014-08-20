@@ -34,6 +34,17 @@ namespace {
   } thm;
 };
 
+struct SlideRoomBuf : public virtual RoomBuf
+{
+  SlideRoomBuf() {}
+  SlideRoomBuf( SlideRoomBuf const& _room ) { throw "NoNoNo"; }
+  virtual ~SlideRoomBuf() {}
+  
+  std::string           getname() const { return "SlideRoom"; }
+  void                  process( Action& _action ) const;
+  int                   cmp( RoomBuf const& _rb ) const { return 0; }
+};
+
 void
 SlideRoomBuf::process( Action& _action ) const
 {
@@ -53,12 +64,15 @@ SlideRoomBuf::process( Action& _action ) const
     _action.blit( pos, over_start ? gallery::shiny_shell : gallery::shell );
   }
   
+  if (_action.fires()) {
+    if (over_end) { _action.moveto( SlideMap::end_upcoming() ); }
+    if (over_start) { _action.moveto( SlideMap::start_upcoming() ); }
+    if (over_end or over_start) { _action.fired(); return; }
+  }
+  
   hydro::effect( thm.table, _action );
   _action.biasedmotion( hydro::motion( thm.table, _action ) );
 }
 
-Gate
-SlideRoomBuf::start_incoming()
-{
-  return Gate( new SlideRoomBuf, Point<int32_t>(50, 50) );
-}
+Gate SlideMap::start_incoming() { return Gate( new SlideRoomBuf, Point<int32_t>(50, 50) ); }
+Gate SlideMap::end_incoming() { return Gate( new SlideRoomBuf, Point<int32_t>(VideoConfig::width/2, VideoConfig::height/2) ); }

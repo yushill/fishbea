@@ -42,6 +42,20 @@ namespace {
   };
 };
 
+struct EPRoomBuf : public virtual RoomBuf
+{
+  EPRoomBuf( uint32_t _code ) : m_code(_code) {}
+  EPRoomBuf( EPRoomBuf const& _room ) { throw "NoNoNo"; }
+  virtual ~EPRoomBuf() {}
+
+  int                   cmp( RoomBuf const& _rb ) const { return tgcmp( m_code, dynamic_cast<EPRoomBuf const&>( _rb ).m_code ); }
+  
+  std::string           getname() const;
+  void                  process( Action& _action ) const;
+  
+  uint32_t              m_code;
+};
+
 void
 EPRoomBuf::process( Action& _action ) const
 {
@@ -64,7 +78,7 @@ EPRoomBuf::process( Action& _action ) const
     // draw exit
     if (_action.fires() and fishexit)
       {
-        _action.moveto( this->end_upcoming() );
+        _action.moveto( EPMap::end_upcoming() );
         std::cerr << "Entering room: " << _action.m_room->getname() << ".\n";
         _action.fired();
         return;
@@ -78,12 +92,6 @@ EPRoomBuf::process( Action& _action ) const
   _action.blit( exitpos.rebind<int32_t>(), fishexit ? gallery::shiny_shell : gallery::shell );
 }
 
-Gate
-EPRoomBuf::start_incoming()
-{
-  return Gate( new EPRoomBuf( 0xa ), Point<int32_t>(320, 192) );
-}
-
 std::string
 EPRoomBuf::getname() const
 {
@@ -92,4 +100,5 @@ EPRoomBuf::getname() const
   return oss.str();
 }
 
+Gate EPMap::start_incoming() { return Gate( new EPRoomBuf( 0xa ), Point<int32_t>(320, 192) ); }
 
