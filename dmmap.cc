@@ -6,15 +6,7 @@
 
 struct DMRoomBuf : public virtual RoomBuf
 {
-  static int32_t const  TheSide = 4;
-  static Point<int32_t> ThePositions( int32_t idx )
-  { static int32_t const w[] = {1,0,-1,0}; return Point<int32_t>( w[idx&3], w[(idx+3)&3] ); }
-  
-  int32_t m_index;
-  
   explicit DMRoomBuf( int32_t _index ) : m_index( (_index+TheSide*TheSide)%(TheSide*TheSide) ) {}
-  virtual ~DMRoomBuf() {};
-  
   int cmp( RoomBuf const& _rb ) const { return tgcmp( m_index, dynamic_cast<DMRoomBuf const&>( _rb ).m_index ); }
   std::string getname() const { std::ostringstream oss; oss << "DiamondRoom[" << m_index << "]"; return oss.str(); }
   
@@ -50,6 +42,12 @@ struct DMRoomBuf : public virtual RoomBuf
       _action.normalmotion();
   }
 
+  static int32_t const  TheSide = 4;
+  static Point<int32_t> ThePositions( int32_t idx )
+  { static int32_t const w[] = {1,0,-1,0}; return Point<int32_t>( w[idx&3], w[(idx+3)&3] ); }
+  
+  int32_t m_index;
+  
   Point<int32_t>
   door_position( int32_t door_index ) const
   {

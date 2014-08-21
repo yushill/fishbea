@@ -9,24 +9,9 @@
 #include <cmath>
 
 namespace {
-  // struct ExpHydroMap
-  // {
-  //   hydro::Delay table[VideoConfig::height][VideoConfig::width];
-  //   ExpHydroMap()
-  //   {
-  //     for (uintptr_t y = 0; y < VideoConfig::height; ++y) {
-  //       for (uintptr_t x = 0; x < VideoConfig::width; ++x) {
-  //         float center = (sin( float( x ) * M_PI * 2 * 3 / VideoConfig::width ) * 128 + 192);
-          
-  //         table[y][x].set( 16 * std::max( ((center - y) / float(center - 0)), ((center - y) / float(center - 384)) ) );
-  //       }
-  //     }
-  //   }
-  // } thm;
-  
   struct ExpHydroMap
   {
-    hydro::Delay table[VideoConfig::height][VideoConfig::width];
+    hydro::Delay table[2][VideoConfig::height][VideoConfig::width];
     ExpHydroMap()
     {
       for (uintptr_t y = 0; y < VideoConfig::height; ++y) {
@@ -42,7 +27,14 @@ namespace {
           
           double angle = (atan2(pos.m_y, pos.m_x)+M_PI);
           double normal = angle*64/M_PI;
-          table[y][x].set( normal + radial );
+          table[0][y][x].set( normal + radial );
+        }
+      }
+      for (uintptr_t y = 0; y < VideoConfig::height; ++y) {
+        for (uintptr_t x = 0; x < VideoConfig::width; ++x) {
+          float center = (sin( float( x ) * M_PI * 2 * 3 / VideoConfig::width ) * 128 + 192);
+          
+          table[1][y][x].set( 16 * std::max( ((center - y) / float(center - 0)), ((center - y) / float(center - 384)) ) );
         }
       }
     }
@@ -51,23 +43,21 @@ namespace {
 
 struct ExpRoomBuf : public virtual RoomBuf
 {
-  ExpRoomBuf() {}
-  ExpRoomBuf( ExpRoomBuf const& _room ) { throw "NoNoNo"; }
-  virtual ~ExpRoomBuf() {}
+  explicit ExpRoomBuf( uintptr_t _idx ) : m_index(_idx) {}
+  int cmp( RoomBuf const& _rb ) const { return tgcmp( m_index, dynamic_cast<ExpRoomBuf const&>( _rb ).m_index ); }
+  std::string getname() const { std::ostringstream oss; oss << "ExpRoom[" << m_index << "]"; return oss.str(); }
   
-  std::string           getname() const { return "ExpRoom"; }
-  void                  process( Action& _action ) const;
-  int                   cmp( RoomBuf const& _rb ) const { return 0; }
+  void
+  process( Action& _action ) const
+  {
+    if ((m_index & -2) == 0) {
+      _action.blit( gallery::classic_bg );
+      hydro::effect( thm.table[m_index], _action );
+      _action.biasedmotion( hydro::motion( thm.table[m_index], _action ) );
+    }
+  }
+
+  uintptr_t m_index;
 };
 
-void
-ExpRoomBuf::process( Action& _action ) const
-{
-  // Scene Draw
-  _action.blit( gallery::classic_bg );
-  
-  hydro::effect( thm.table, _action );
-  _action.biasedmotion( hydro::motion( thm.table, _action ) );
-}
-
-Gate ExpMap::start_incoming() { return Gate( new ExpRoomBuf, Point<int32_t>(50, 50) ); }
+Gate ExpMap::start_incoming() { return Gate( new ExpRoomBuf(0), Point<int32_t>(50, 50) ); }
