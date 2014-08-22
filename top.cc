@@ -12,7 +12,7 @@ main( int argc, char** argv )
   
   Action action( vc.screen );
   
-  action.moveto( ExpMap::start_incoming() );
+  action.moveto( EPMap::start_incoming() );
   
   std::cerr << "Rolling!!!\n";
   
@@ -24,8 +24,10 @@ main( int argc, char** argv )
 }
 
 // Map connections
-Gate SlideMap::start_upcoming() { return SlideMap::start_incoming(); }
-Gate SlideMap::end_upcoming() { return EPMap::start_incoming(); }
 Gate EPMap::end_upcoming() { return DMMap::start_incoming(); }
-Gate DMMap::start_upcoming() { return EPMap::start_incoming(); }
-Gate DMMap::end_upcoming() { return ExpMap::start_incoming(); }
+Gate DMMap::start_upcoming() { return EPMap::end_incoming(); }
+
+Gate DMMap::end_upcoming() { return SlideMap::start_incoming(); }
+Gate SlideMap::start_upcoming() { return DMMap::end_incoming(); }
+
+Gate SlideMap::end_upcoming() { return ExpMap::start_incoming(); }

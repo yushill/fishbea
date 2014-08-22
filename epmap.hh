@@ -7,6 +7,7 @@ namespace EPMap
 {
   extern Gate start_incoming();
   extern Gate end_upcoming();
+  extern Gate end_incoming();
 };
 
 #endif /*__EPMAP_HH__*/

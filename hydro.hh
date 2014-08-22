@@ -59,7 +59,7 @@ namespace hydro
   motion( mapT const& _table, actionT& _action )
   {
     Point<float> g;
-    Point<float> const& pos =_action.m_pos;
+    Point<float> const& pos =_action.pos();
     if (not grad( _table, pos.rebind<int32_t>(), g )) return Point<float>();
     double module = ::sqrt( g.sqnorm() );
     if (module < 1e-6) return Point<float>();

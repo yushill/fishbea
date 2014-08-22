@@ -17,8 +17,8 @@ Control::collect()
 
 Action::Action( SDL_Surface* _screen )
   : m_screen( _screen ), m_scratch( SDL_DisplayFormatAlpha( _screen ) ),
-    m_next_ticks( SDL_GetTicks() + FramePeriod ),
-    m_story(), m_room(), m_pos()
+    m_next_ticks( SDL_GetTicks() + FramePeriod ), m_pos(),
+    m_story(), m_room()
 {
   image_apply( Fill<0xff,0xff,0xff,0x0>(), m_scratch );
 }
@@ -40,11 +40,14 @@ void Action::run()
     
     else {
       Room curroom( m_room );
-      Point<int32_t> curpos( m_pos.rebind<int32_t>() );
       
+      m_origin = m_pos;
       curroom->process( *this );
-            
-      this->blit( curpos, gallery::hero );
+      cutmotion( Point<float>( -4, -4 ), Point<float>( VideoConfig::width+4, -4 ) );
+      cutmotion( Point<float>( VideoConfig::width+4, -4 ), Point<float>( VideoConfig::width+4, VideoConfig::height+4 ) );
+      cutmotion( Point<float>( VideoConfig::width+4, VideoConfig::height+4 ), Point<float>( -4, VideoConfig::height+4 ) );
+      cutmotion( Point<float>( -4, VideoConfig::height+4 ), Point<float>( -4, -4 ) );
+      this->blit( m_origin.rebind<int32_t>(), gallery::hero );
       
       for (TimeLine *tl = m_story.firstghost(), *eotl = m_story.active; tl != eotl; tl = tl->fwd())
         {
@@ -213,4 +216,27 @@ void
 Action::endstats( std::ostream& _sink )
 {
   _sink << "Active records: " << m_story.record_count << ".\n";
+}
+
+void
+Action::cutmotion( Point<float> const& w1, Point<float> const& w2 )
+{
+  // computing intersection
+  Point<float> const& m1( m_origin );
+  Point<float> const& m2( m_pos );
+  Point<float> wd = w2 - w1;
+  Point<float> md = m2 - m1;
+  float det = wd*!md;
+  if (fabs(det) < 1e-6) return;
+  Point<float>  x = md*(w2*!w1)/det - wd*(m2*!m1)/det;
+  
+  // Checking if intersection lies in between m1..m2 and w1..w2 
+  if ((m2-x)*(m1-x) > 0) return;
+  if ((w2-x)*(w1-x) > 0) return;
+  
+  // prevent collision
+  if ((m1-x).sqnorm() > 8)
+    m_pos = (x*2 + m1)/3;
+  else
+    m_pos = m1;
 }

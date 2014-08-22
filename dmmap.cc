@@ -20,7 +20,7 @@ struct DMRoomBuf : public virtual RoomBuf
     for (int32_t door_idx = 0; door_idx < 4; ++door_idx )
       {
         Point<int32_t> pos = door_position( door_idx );
-        if ((pos.rebind<float>() - _action.m_pos).sqnorm() > 24*24) {
+        if ((pos.rebind<float>() - _action.pos()).sqnorm() > 24*24) {
           _action.blit( pos, gallery::shell );
         } else {
           _action.blit( pos, gallery::shiny_shell );

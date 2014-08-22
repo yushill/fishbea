@@ -24,14 +24,12 @@ struct Control
   bool            fires() const { return m_keys[SDLK_SPACE]; }
   void            fired() { m_keys[SDLK_SPACE] = false; }
   bool            jumps() const { return m_keys[SDLK_ESCAPE] or m_keys[SDLK_TAB]; }
-  template <typename PT, typename INT>
-  void            move( PT& _, INT speed ) const
-  {
-    _.m_x += speed*(int32_t(m_keys[SDLK_RIGHT])-int32_t(m_keys[SDLK_LEFT]));
-    _.m_y += speed*(int32_t(m_keys[SDLK_DOWN])-int32_t(m_keys[SDLK_UP]));
+  Point<float>    motion() const {
+    int hor = int(m_keys[SDLK_RIGHT])-int(m_keys[SDLK_LEFT]);
+    int ver = int(m_keys[SDLK_DOWN])-int(m_keys[SDLK_UP]);
+    float scale = (hor & ver) ? M_SQRT1_2 : 1.0;
+    return Point<float>( hor*scale, ver*scale );
   }
-  int             horizontal() const { return int(m_keys[SDLK_RIGHT])-int(m_keys[SDLK_LEFT]); }
-  int             vertical() const { return int(m_keys[SDLK_DOWN])-int(m_keys[SDLK_UP]); }
   bool            right() const { return m_keys[SDLK_RIGHT]; }
   bool            left() const { return m_keys[SDLK_LEFT]; }
   bool            delfwd() const { return m_keys[SDLK_DELETE]; }
@@ -65,30 +63,20 @@ private:
   static const int  SlowMotion = 1;
   int               m_next_ticks;
   Control           m_control;
+  Point<float>      m_pos, m_origin;
   
 public:
   // Engine
   void moveto( Gate const& gate ) { m_room = gate.room; m_pos = Point<float>( gate.pos.m_x, gate.pos.m_y ); }
-  void normalmotion()
-  {
-    int32_t hor = m_control.horizontal();
-    int32_t ver = m_control.vertical();
-    float speed = m_control.shift() ? SlowMotion : FastMotion;
-    if (hor & ver) speed *= M_SQRT1_2;
-    m_pos.m_x += speed*hor;
-    m_pos.m_y += speed*ver;
-  }
-  void biasedmotion( Point<float> const& _bias )
-  {
-    normalmotion();
-    m_pos += _bias;
-  }
+  void normalmotion() { m_pos += m_control.motion()*(m_control.shift() ? SlowMotion : FastMotion); }
+  void moremotion( Point<float> const& _delta ) { m_pos += _delta; }
+  void cutmotion( Point<float> const& w1, Point<float> const& w2 );
+  Point<float> const& pos() const { return m_origin; }
   
   date_t            now() const { return m_story.now(); }
   
   Story             m_story;
   Room              m_room;
-  Point<float>      m_pos;
   
   void endstats( std::ostream& _sink );
 };

@@ -32,9 +32,10 @@ namespace {
       }
       for (uintptr_t y = 0; y < VideoConfig::height; ++y) {
         for (uintptr_t x = 0; x < VideoConfig::width; ++x) {
+          if ((y < 32) or (y > (VideoConfig::height-32))) { table[1][y][x].set( nan("") ); continue; }
+          if ((x < 32) or (x > (VideoConfig::width-32))) { table[1][y][x].set( nan("") ); continue; }
           float center = (sin( float( x ) * M_PI * 2 * 3 / VideoConfig::width ) * 128 + 192);
-          
-          table[1][y][x].set( 16 * std::max( ((center - y) / float(center - 0)), ((center - y) / float(center - 384)) ) );
+          table[1][y][x].set( 16 * std::max( ((center - y) / float(center - 32)), ((center - y) / float(center - (VideoConfig::height-32))) ) );
         }
       }
     }
@@ -53,11 +54,14 @@ struct ExpRoomBuf : public virtual RoomBuf
     if ((m_index & -2) == 0) {
       _action.blit( gallery::classic_bg );
       hydro::effect( thm.table[m_index], _action );
-      _action.biasedmotion( hydro::motion( thm.table[m_index], _action ) );
+      _action.normalmotion();
+      _action.moremotion( hydro::motion( thm.table[m_index], _action ) );
+    } else if (m_index == 4) {
+      
     }
   }
 
   uintptr_t m_index;
 };
 
-Gate ExpMap::start_incoming() { return Gate( new ExpRoomBuf(0), Point<int32_t>(50, 50) ); }
+Gate ExpMap::start_incoming() { return Gate( new ExpRoomBuf(1), Point<int32_t>(50, 50) ); }

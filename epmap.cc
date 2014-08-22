@@ -27,9 +27,9 @@ namespace {
 
 struct EPRoomBuf : public virtual RoomBuf
 {
-  explicit EPRoomBuf( uint32_t _code ) : m_code(_code) {}
-  int                   cmp( RoomBuf const& _rb ) const { return tgcmp( m_code, dynamic_cast<EPRoomBuf const&>( _rb ).m_code ); }
-  std::string           getname() const { std::ostringstream oss; oss << "EPRoom[" << std::hex << m_code << "]"; return oss.str(); }
+  explicit EPRoomBuf() {}
+  int cmp( RoomBuf const& _rb ) const { return 0; }
+  std::string getname() const { std::ostringstream oss; oss << "EPRoom[" << std::hex << TheCode << "]"; return oss.str(); }
   
   struct Code
   {
@@ -64,9 +64,11 @@ struct EPRoomBuf : public virtual RoomBuf
       _action.blit( Point<int32_t>( 64, 96+64*door ), code.bit( door ) ? gallery::shiny_starfish : gallery::starfish );
   
     static Point<float> const exitpos( 479.5, 191.5 );
-    bool fishexit = (_action.m_pos - exitpos).sqnorm() <= 24*24;
+    bool fishexit = (_action.pos() - exitpos).sqnorm() <= 24*24;
   
-    if (code.value == m_code) {
+    _action.normalmotion();
+    
+    if (code.value == TheCode) {
       // draw exit
       if (_action.fires() and fishexit)
         {
@@ -75,17 +77,16 @@ struct EPRoomBuf : public virtual RoomBuf
           _action.fired();
           return;
         }
-      else
-        _action.normalmotion();
     } else {
       hydro::effect( ephf.table, _action );
-      _action.biasedmotion( hydro::motion( ephf.table, _action ) );
+      _action.moremotion( hydro::motion( ephf.table, _action ) );
     }
     _action.blit( exitpos.rebind<int32_t>(), fishexit ? gallery::shiny_shell : gallery::shell );
   }
 
-  uint32_t              m_code;
+  static uint32_t const TheCode = 0xa;
 };
 
-Gate EPMap::start_incoming() { return Gate( new EPRoomBuf( 0xa ), Point<int32_t>(320, 192) ); }
+Gate EPMap::start_incoming() { return Gate( new EPRoomBuf, Point<int32_t>(320, 192) ); }
+Gate EPMap::end_incoming() { return Gate( new EPRoomBuf, Point<int32_t>(480, 192) ); }
 

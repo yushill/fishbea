@@ -26,7 +26,7 @@ namespace {
             nan("");
           
           double angle = (atan2(pos.m_y, pos.m_x)+M_PI);
-          double normal = angle*8/M_PI;
+          double normal = angle*16/M_PI;
           table[y][x].set( normal + radial );
         }
       }
@@ -49,12 +49,12 @@ struct SlideRoomBuf : public virtual RoomBuf
   
     {
       Point<int32_t> pos( VideoConfig::width/2, VideoConfig::height/2 );
-      over_end = (pos.rebind<float>() - _action.m_pos).sqnorm() <= 24*24;
+      over_end = (pos.rebind<float>() - _action.pos()).sqnorm() <= 24*24;
       _action.blit( pos, over_end ? gallery::shiny_shell : gallery::shell );
     }
     {
       Point<int32_t> pos( 50, 50 );
-      over_start = (pos.rebind<float>() - _action.m_pos).sqnorm() <= 24*24;
+      over_start = (pos.rebind<float>() - _action.pos()).sqnorm() <= 24*24;
       _action.blit( pos, over_start ? gallery::shiny_shell : gallery::shell );
     }
   
@@ -65,7 +65,8 @@ struct SlideRoomBuf : public virtual RoomBuf
     }
   
     hydro::effect( shf.table, _action );
-    _action.biasedmotion( hydro::motion( shf.table, _action ) );
+    _action.normalmotion();
+    _action.moremotion( hydro::motion( shf.table, _action ) );
   }
 };
 
