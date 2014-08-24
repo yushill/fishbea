@@ -3,7 +3,15 @@
 
 #include <map.hh>
 
-namespace SlideMap
+namespace Spiral
+{
+  extern Gate start_incoming();
+  extern Gate end_incoming();
+  extern Gate start_upcoming();
+  extern Gate end_upcoming();
+};
+
+namespace Slalom
 {
   extern Gate start_incoming();
   extern Gate end_incoming();

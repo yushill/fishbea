@@ -9,10 +9,10 @@
 #include <cmath>
 
 namespace {
-  struct SlideHydroField
+  struct SpiralHydroField
   {
     hydro::Delay table[VideoConfig::height][VideoConfig::width];
-    SlideHydroField()
+    SpiralHydroField()
     {
       for (uintptr_t y = 0; y < VideoConfig::height; ++y) {
         for (uintptr_t x = 0; x < VideoConfig::width; ++x) {
@@ -31,7 +31,24 @@ namespace {
         }
       }
     }
-  } shf;
+  } SpiralHF;
+  
+  struct SlalomHydroField
+  {
+    hydro::Delay table[VideoConfig::height][VideoConfig::width];
+    SlalomHydroField()
+    {
+      for (uintptr_t y = 0; y < VideoConfig::height; ++y) {
+        for (uintptr_t x = 0; x < VideoConfig::width; ++x) {
+          if ((y < 32) or (y > (VideoConfig::height-32))) { table[y][x].set( nan("") ); continue; }
+          if ((x < 32) or (x > (VideoConfig::width-32))) { table[y][x].set( nan("") ); continue; }
+          float center = (sin( float( x ) * M_PI * 2 * 3 / VideoConfig::width ) * 128 + 192);
+          table[y][x].set( 16 * std::max( ((center - y) / float(center - 32)), ((center - y) / float(center - (VideoConfig::height-32))) ) );
+        }
+      }
+    }
+  } SlalomHF;
+  
 };
 
 struct SlideRoomBuf : public virtual RoomBuf
@@ -59,16 +76,40 @@ struct SlideRoomBuf : public virtual RoomBuf
     }
   
     if (_action.fires()) {
-      if (over_end) { _action.moveto( SlideMap::end_upcoming() ); }
-      if (over_start) { _action.moveto( SlideMap::start_upcoming() ); }
+      if (over_end) { _action.moveto( Spiral::end_upcoming() ); }
+      if (over_start) { _action.moveto( Spiral::start_upcoming() ); }
       if (over_end or over_start) { _action.fired(); return; }
     }
   
-    hydro::effect( shf.table, _action );
+    hydro::effect( SpiralHF.table, _action );
     _action.normalmotion();
-    _action.moremotion( hydro::motion( shf.table, _action ) );
+    _action.moremotion( hydro::motion( SpiralHF.table, _action ) );
   }
 };
 
-Gate SlideMap::start_incoming() { return Gate( new SlideRoomBuf, Point<int32_t>(50, 50) ); }
-Gate SlideMap::end_incoming() { return Gate( new SlideRoomBuf, Point<int32_t>(VideoConfig::width/2, VideoConfig::height/2) ); }
+Gate Spiral::start_incoming() { return Gate( new SlideRoomBuf, Point<int32_t>(50, 50) ); }
+Gate Spiral::end_incoming() { return Gate( new SlideRoomBuf, Point<int32_t>(VideoConfig::width/2, VideoConfig::height/2) ); }
+
+struct SlalomRoomBuf : public virtual RoomBuf
+{
+  int                   cmp( RoomBuf const& _rb ) const { return 0; }
+  std::string           getname() const { return "SlalomRoom"; }
+  
+  void
+  process( Action& _action ) const
+  {
+    // Scene Draw
+    _action.blit( gallery::classic_bg );
+    
+    // Hydro field
+    hydro::effect( SlalomHF.table, _action );
+    _action.normalmotion();
+    _action.moremotion( hydro::motion( SlalomHF.table, _action ) );
+    
+    // Walls
+  }
+};
+
+Gate Slalom::start_incoming() { return Gate( new SlalomRoomBuf, Point<int32_t>(50, 50) ); }
+Gate Slalom::end_incoming() { return Gate( new SlalomRoomBuf, Point<int32_t>(VideoConfig::width/2, VideoConfig::height/2) ); }
+
