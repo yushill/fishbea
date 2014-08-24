@@ -12,7 +12,7 @@ main( int argc, char** argv )
   
   Action action( vc.screen );
   
-  action.moveto( EPMap::start_incoming() );
+  action.moveto( Slalom::start_incoming() );
   
   std::cerr << "Rolling!!!\n";
   

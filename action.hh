@@ -54,6 +54,7 @@ struct Action
   void blit( Point<int32_t> const& _pos, SDL_Surface* _src );
   void blit( SDL_Surface* _src );
   SDL_Surface* scratch( SDL_Surface* _scratch=0 ) { return m_scratch; }
+  SDL_Surface* screen() { return m_screen; }
 
 private:  
   SDL_Surface*      m_screen;

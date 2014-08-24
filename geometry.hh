@@ -19,6 +19,7 @@ struct Point
   bool operator!=( Point const& rpt ) const { return (m_x != rpt.m_x) or (m_y != rpt.m_y); }
   bool operator==( Point const& rpt ) const { return (m_x == rpt.m_x) and (m_y == rpt.m_y); }
   template <typename T> void pull( T& rect ) const { rect.x = m_x; rect.y = m_y; }
+  template <typename T> void pull( T& x, T& y ) const { x = m_x; y = m_y; }
   dist_type sqnorm() const { return m_x*m_x + m_y*m_y; }
   template <typename otherT> Point<otherT> rebind() const { return Point<otherT>( m_x, m_y ); }
 
