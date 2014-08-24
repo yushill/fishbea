@@ -36,8 +36,8 @@ namespace
   
   struct SlideRoomBuf : public virtual RoomBuf
   {
-    int                   cmp( RoomBuf const& _rb ) const { return 0; }
-    std::string           getname() const { return "SlideRoom"; }
+    int cmp( RoomBuf const& _rb ) const { return 0; }
+    std::string getname() const { return "SlideRoom"; }
   
     void
     process( Action& _action ) const
@@ -84,8 +84,8 @@ namespace {
         for (uintptr_t x = 0; x < VideoConfig::width; ++x) {
           if ((y < 40) or (y > (VideoConfig::height-40))) { table[y][x].set( nan("") ); continue; }
           if ((x < 40) or (x > (VideoConfig::width-40))) { table[y][x].set( nan("") ); continue; }
-          float center = (sin( x*M_PI*2./160. )*128 + VideoConfig::height/2);
-          table[y][x].set( 16 * std::max( ((center - y) / float(center - 32)), ((center - y) / float(center - (VideoConfig::height-32))) ) );
+          float center = (sin( (x+40)*M_PI*2./160. )*128 + VideoConfig::height/2);
+          table[y][x].set( 8 * std::max( ((center - y) / float(center - 32)), ((center - y) / float(center - (VideoConfig::height-32))) ) );
         }
       }
     }
@@ -93,9 +93,23 @@ namespace {
   
   struct SlalomRoomBuf : public virtual RoomBuf
   {
-    int                   cmp( RoomBuf const& _rb ) const { return 0; }
-    std::string           getname() const { return "SlalomRoom"; }
-  
+    int cmp( RoomBuf const& _rb ) const { return 0; }
+    std::string getname() const { return "SlalomRoom"; }
+    
+    void wall( Action& _action, int32_t x, int32_t y1, int32_t y2 ) const
+    {
+      if (y1 > y2) std::swap( y1, y2 );
+      static int32_t const radius = 2;
+      Point<int32_t> beg( x, y1 ), end( x, y2 );
+      _action.cutmotion( beg.rebind<float>(), end.rebind<float>() );
+      SDL_Rect wall;
+      beg -= Point<int32_t>(radius,radius);
+      end += Point<int32_t>(radius,radius);
+      beg.pull( wall.x, wall.y );
+      (end-beg).pull( wall.w, wall.h );
+      SDL_FillRect( _action.screen(), &wall, SDL_MapRGB(_action.screen()->format, 0, 0, 0) );
+    }
+    
     void
     process( Action& _action ) const
     {
@@ -108,27 +122,12 @@ namespace {
       _action.moremotion( hydro::motion( SlalomHF.table, _action ) );
     
       // Walls
-      for (int idx = 0; idx < 3; ++idx)
+      for (int idx = 0; idx < 4; ++idx)
         {
-          {
-            Point<int32_t> beg( 80 + idx*160, VideoConfig::height/2 );
-            Point<int32_t> end( 80 + idx*160, VideoConfig::height-40 );
-            SDL_Rect wall;
-            (beg-Point<int32_t>(2,2)).pull( wall.x, wall.y );
-            ((end-beg) + Point<int32_t>(4,4)).pull( wall.w, wall.h );
-            SDL_FillRect( _action.screen(), &wall, SDL_MapRGB(_action.screen()->format, 0, 0, 0) );
-            _action.cutmotion( beg.rebind<float>(), end.rebind<float>() );
-          }
-          
-          {
-            Point<int32_t> beg( 160 + idx*160, 40 );
-            Point<int32_t> end( 160 + idx*160, VideoConfig::height/2 );
-            SDL_Rect wall;
-            (beg-Point<int32_t>(2,2)).pull( wall.x, wall.y );
-            ((end-beg) + Point<int32_t>(4,4)).pull( wall.w, wall.h );
-            SDL_FillRect( _action.screen(), &wall, SDL_MapRGB(_action.screen()->format, 0, 0, 0) );
-            _action.cutmotion( beg.rebind<float>(), end.rebind<float>() );
-          }
+          wall( _action,  40 + idx*160, 40, VideoConfig::height/2-24 );
+          wall( _action,  40 + idx*160, VideoConfig::height/2, VideoConfig::height-40 );
+          wall( _action, 120 + idx*160, 40, VideoConfig::height/2 );
+          wall( _action, 120 + idx*160, VideoConfig::height/2+24, VideoConfig::height-40 );
         }
     }
   };

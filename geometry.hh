@@ -24,6 +24,7 @@ struct Point
   template <typename otherT> Point<otherT> rebind() const { return Point<otherT>( m_x, m_y ); }
 
   Point& operator+=( Point const& rpt ) { m_x+=rpt.m_x; m_y+=rpt.m_y; return *this; }
+  Point& operator-=( Point const& rpt ) { m_x-=rpt.m_x; m_y-=rpt.m_y; return *this; }
   
   dist_type m_x, m_y;
 };
