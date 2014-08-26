@@ -80,12 +80,16 @@ namespace {
     hydro::Delay table[VideoConfig::height][VideoConfig::width];
     SlalomHydroField()
     {
-      for (uintptr_t y = 0; y < VideoConfig::height; ++y) {
-        for (uintptr_t x = 0; x < VideoConfig::width; ++x) {
-          if ((y < 40) or (y > (VideoConfig::height-40))) { table[y][x].set( nan("") ); continue; }
-          if ((x < 40) or (x > (VideoConfig::width-40))) { table[y][x].set( nan("") ); continue; }
-          float center = (sin( (x+40)*M_PI*2./160. )*128 + VideoConfig::height/2);
-          table[y][x].set( 8 * std::max( ((center - y) / float(center - 32)), ((center - y) / float(center - (VideoConfig::height-32))) ) );
+      for (int32_t y = 0; y < VideoConfig::height; ++y) {
+        for (int32_t x = 0; x < VideoConfig::width; ++x) {
+          if ((x < 40) or (x > (VideoConfig::width-40))) {
+            table[y][x].set( nan("") );
+          } else if ((y < 40) or (y > (VideoConfig::height-40))) {
+            table[y][x].set( (40-x)/27. );
+          } else {
+            float center = (sin( (x+40)*M_PI*2./160. )*128 + VideoConfig::height/2);
+            table[y][x].set( 7 * std::max( ((center - y) / float(center - 32)), ((center - y) / float(center - (VideoConfig::height-32))) ) );
+          }
         }
       }
     }
@@ -129,6 +133,10 @@ namespace {
           wall( _action, 120 + idx*160, 40, VideoConfig::height/2 );
           wall( _action, 120 + idx*160, VideoConfig::height/2+24, VideoConfig::height-40 );
         }
+      _action.cutmotion( Point<float>( 0, 0 ), Point<float>( VideoConfig::width, 0 ) );
+      _action.cutmotion( Point<float>( VideoConfig::width, 0 ), Point<float>( VideoConfig::width, VideoConfig::height ) );
+      _action.cutmotion( Point<float>( VideoConfig::width, VideoConfig::height ), Point<float>( 0, VideoConfig::height ) );
+      _action.cutmotion( Point<float>( 0, VideoConfig::height ), Point<float>( 0, 0 ) );
     }
   };
 }

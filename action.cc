@@ -34,6 +34,10 @@ void Action::run()
     m_control.collect();
     m_story.append( m_room, m_pos, m_control.fires() );
     
+    if (m_control.delbwd()) {
+      std::cout << "position: {" << m_pos.m_x << ',' << m_pos.m_y << "}\n";
+    }
+    
     if (m_control.jumps()) {
       this->jump();
     }
