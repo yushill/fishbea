@@ -133,6 +133,18 @@ namespace {
           wall( _action, 120 + idx*160, 40, VideoConfig::height/2 );
           wall( _action, 120 + idx*160, VideoConfig::height/2+24, VideoConfig::height-40 );
         }
+      {
+        static Point<float> m1;
+        Point<float> m2( _action.pos() );
+        float px = fmod( m2.m_x, 80 );
+        std::swap( px, m2.m_x );
+        if ((m1.m_x <= 40.) and (m2.m_x >= 40.)) {
+          Point<float> md = m2 - m1;
+          Point<float> pos( px - m2.m_x + 40, m1.m_y + md.m_y*(40 - m1.m_x)/md.m_x );
+          std::cout << "position: {" << pos.m_x << ',' << pos.m_y << "}\n";
+        }
+        m1 = m2;
+      }
       _action.cutmotion( Point<float>( 0, 0 ), Point<float>( VideoConfig::width, 0 ) );
       _action.cutmotion( Point<float>( VideoConfig::width, 0 ), Point<float>( VideoConfig::width, VideoConfig::height ) );
       _action.cutmotion( Point<float>( VideoConfig::width, VideoConfig::height ), Point<float>( 0, VideoConfig::height ) );
@@ -143,4 +155,5 @@ namespace {
 
 Gate Slalom::start_incoming() { return Gate( new SlalomRoomBuf, Point<int32_t>(20, 20) ); }
 Gate Slalom::end_incoming() { return Gate( new SlalomRoomBuf, Point<int32_t>(VideoConfig::width/2, VideoConfig::height/2) ); }
+
 
