@@ -34,10 +34,10 @@ namespace
     }
   } SpiralHF;
   
-  struct SlideRoomBuf : public virtual RoomBuf
+  struct SpiralRoomBuf : public virtual RoomBuf
   {
     int cmp( RoomBuf const& _rb ) const { return 0; }
-    std::string getname() const { return "SlideRoom"; }
+    std::string getname() const { return "SpiralRoom"; }
   
     void
     process( Action& _action ) const
@@ -71,8 +71,8 @@ namespace
   };
 }
 
-Gate Spiral::start_incoming() { return Gate( new SlideRoomBuf, Point<int32_t>(50, 50) ); }
-Gate Spiral::end_incoming() { return Gate( new SlideRoomBuf, Point<int32_t>(VideoConfig::width/2, VideoConfig::height/2) ); }
+Gate Spiral::start_incoming() { return Gate( new SpiralRoomBuf, Point<int32_t>(50, 50) ); }
+Gate Spiral::end_incoming() { return Gate( new SpiralRoomBuf, Point<int32_t>(VideoConfig::width/2, VideoConfig::height/2) ); }
 
 namespace {
   struct SlalomHydroField

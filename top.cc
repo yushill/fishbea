@@ -4,6 +4,7 @@
 #include <epmap.hh>
 #include <expmap.hh>
 #include <slideroom.hh>
+#include <pebblemap.hh>
 
 int
 main( int argc, char** argv )
@@ -12,7 +13,7 @@ main( int argc, char** argv )
   
   Action action( vc.screen );
   
-  action.moveto( Slalom::start_incoming() );
+  action.moveto( EP::start_incoming() );
   
   std::cerr << "Rolling!!!\n";
   

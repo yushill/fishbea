@@ -25,6 +25,8 @@ struct Point
 
   Point& operator+=( Point const& rpt ) { m_x+=rpt.m_x; m_y+=rpt.m_y; return *this; }
   Point& operator-=( Point const& rpt ) { m_x-=rpt.m_x; m_y-=rpt.m_y; return *this; }
+  Point& operator*=( dist_type rsc ) { m_x *= rsc; m_y *= rsc; return *this; }
+  Point& operator/=( dist_type rsc ) { m_x /= rsc; m_y /= rsc; return *this; }
   
   dist_type m_x, m_y;
 };
