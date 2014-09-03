@@ -38,7 +38,11 @@ namespace {
         for (int idx = 0; idx < side*side; ++ idx) {
           Point<int32_t> pos( 2*(idx % side)+1-side, 2*(idx/side)+1-side );
           pos = (pos*blocsize + Point<int32_t>( VideoConfig::width, VideoConfig::height ))/2;
-          _action.blit( pos, ((values >> idx) & 1) ? gallery::shiny_shell : gallery::shell );
+          Pixel bloc[blocsize][blocsize];
+          uint8_t alpha = ((values >> idx) & 1) ? 170 : 85;
+          for (int pix = 0; pix < blocsize*blocsize; ++pix)
+            bloc[pix/blocsize][pix%blocsize].set( 0xff, 0xff, 0xff, alpha );
+          _action.blit( pos, bloc );
         }
       }
     };

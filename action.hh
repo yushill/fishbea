@@ -43,6 +43,9 @@ struct Action
   void jump();
   bool fires() const { return m_control.cmds[PlayerInterface::Fire]; }
   void fired() { m_control.cmds.reset(PlayerInterface::Fire); }
+  template <uintptr_t WIDTH, uintptr_t HEIGHT>
+  void blit( Point<int32_t> const& _pos, Pixel (&img)[HEIGHT][WIDTH] ) { blit( _pos, &img[0][0], WIDTH, HEIGHT ); }
+  void blit( Point<int32_t> const& _pos, Pixel* data, uintptr_t width, uintptr_t height );
   void blit( Point<int32_t> const& _pos, SDL_Surface* _src );
   void blit( SDL_Surface* _src );
   SDL_Surface* scratch( SDL_Surface* _scratch=0 ) { return m_scratch; }

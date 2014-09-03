@@ -225,6 +225,23 @@ Action::jump()
 }
 
 void
+Action::blit( Point<int32_t> const& _pos, Pixel* _pixels, uintptr_t _width, uintptr_t _height )
+{
+  void* pixels = reinterpret_cast<void*>(_pixels);
+  int height = _height, width = _width;
+  Uint16 pitch = _width*4;
+  std::swap( pixels, m_scratch->pixels );
+  std::swap( width, m_scratch->w );
+  std::swap( height, m_scratch->h );
+  std::swap( pitch, m_scratch->pitch );
+  blit( _pos, m_scratch );
+  std::swap( pixels, m_scratch->pixels );
+  std::swap( width, m_scratch->w );
+  std::swap( height, m_scratch->h );
+  std::swap( pitch, m_scratch->pitch );
+}
+
+void
 Action::blit( Point<int32_t> const& _pos, SDL_Surface* _src )
 {
   SDL_Rect offset;

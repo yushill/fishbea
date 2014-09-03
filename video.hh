@@ -104,4 +104,11 @@ image_apply( kerT const& ker, imgT* img )
   return img;
 }
 
+struct Pixel {
+  uint8_t r,g,b,a;
+  Pixel() {}
+  Pixel( uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a ) : r(_r),g(_g),b(_b),a(_a) {}
+  void set( uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a ) { new (this) Pixel( _r,_g,_b,_a ); }
+};
+
 #endif /* __IMAGE_HH__ */
