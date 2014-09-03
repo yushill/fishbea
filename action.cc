@@ -1,17 +1,44 @@
 #include <action.hh>
 #include <gallery.hh>
 #include <SDL/SDL.h>
+#include <SDL/SDL_keysym.h>
 #include <iostream>
 #include <memory>
+#include <cmath>
+
+Point<float>
+PlayerInterface::motion() const
+{
+  int hor = int(cmds[Right])-int(cmds[Left]);
+  int ver = int(cmds[Down])-int(cmds[Up]);
+  float scale = (hor & ver) ? M_SQRT1_2 : 1.0;
+  return Point<float>( hor*scale, ver*scale );
+}
 
 void
-Control::collect()
+PlayerInterface::collect()
 {
   for (SDL_Event event; SDL_PollEvent( &event );)
     {
       if      (event.type == SDL_QUIT)    throw Quit();
-      else if (event.type == SDL_KEYDOWN) m_keys.set( event.key.keysym.sym, true );
-      else if (event.type == SDL_KEYUP)   m_keys.reset( event.key.keysym.sym );
+      else if ((event.type == SDL_KEYDOWN) or (event.type == SDL_KEYUP))
+        {
+          bool active = (event.type == SDL_KEYDOWN);
+          switch (event.key.keysym.sym) {
+          case SDLK_RETURN: case SDLK_KP_ENTER: cmds.set( Branch, active ); cmds.set( Select, active ); break;
+          case SDLK_SPACE:                      cmds.set( Fire, active ); break;
+          case SDLK_ESCAPE:                     cmds.set( Jump, active ); break;
+          case SDLK_RIGHT:                      cmds.set( Right, active ); break;
+          case SDLK_LEFT:                       cmds.set( Left, active ); break;
+          case SDLK_DOWN:                       cmds.set( Down, active ); break;
+          case SDLK_UP:                         cmds.set( Up, active ); break;
+          case SDLK_DELETE:                     cmds.set( DelFwd, active ); break;
+          case SDLK_BACKSPACE:                  cmds.set( DelBwd, active ); cmds.set( Debug, active ); break;
+          case SDLK_LSHIFT: case SDLK_RSHIFT:   cmds.set( Shift, active ); break;
+          case SDLK_LALT: case SDLK_RALT:       cmds.set( Alt, active ); break;
+          default: break;
+          }
+        }
     }
 }
 
@@ -32,13 +59,13 @@ void Action::run()
 {
   for (;;) {
     m_control.collect();
-    m_story.append( m_room, m_pos, m_control.fires() );
+    m_story.append( m_room, m_pos, fires() );
     
-    if (m_control.delbwd()) {
+    if (m_control.cmds[PlayerInterface::DelBwd]) {
       std::cout << "position: {" << m_pos.m_x << ',' << m_pos.m_y << "}\n";
     }
     
-    if (m_control.jumps()) {
+    if (m_control.cmds[PlayerInterface::Jump]) {
       this->jump();
     }
     
@@ -63,8 +90,7 @@ void Action::run()
             this->blit( ghost.pos, (now < gdate) ? gallery::blue_ghost : gallery::red_ghost ); 
         }
       
-      if (m_control.picks()) {
-        m_control.picked();
+      if (m_control.getandclear(PlayerInterface::Branch)) {
         SDL_Surface* thumb = SDL_DisplayFormatAlpha( m_screen );
         image_apply( Grayify(), thumb );
         m_story.newbwd( m_room, m_pos, thumb );
@@ -158,14 +184,14 @@ Action::jump()
     draw_timebar( tbs_full );
     this->flipandwait();
     m_control.collect();
-    if (m_control.picks()) { m_control.picked(); break; }
+    if (m_control.getandclear(PlayerInterface::Select)) break;
     if (m_story.active->single()) continue;
     int dir = 0;
     std::auto_ptr<TimeLine> aptl;
-    if      (m_control.right())  { m_story.movfwd(); dir = -640; }
-    else if (m_control.left())   { m_story.movbwd(); dir = +640; }
-    else if (m_control.delfwd()) { aptl.reset( m_story.popfwd() ); dir = -640; }
-    else if (m_control.delbwd()) { aptl.reset( m_story.popbwd() ); dir = +640; }
+    if      (m_control.cmds[PlayerInterface::Right])  { m_story.movfwd(); dir = -640; }
+    else if (m_control.cmds[PlayerInterface::Left])   { m_story.movbwd(); dir = +640; }
+    else if (m_control.cmds[PlayerInterface::DelFwd]) { aptl.reset( m_story.popfwd() ); dir = -640; }
+    else if (m_control.cmds[PlayerInterface::DelBwd]) { aptl.reset( m_story.popbwd() ); dir = +640; }
     else { continue; }
     SDL_Surface* nxtthumb = m_story.active->getthumb();
       
@@ -182,7 +208,7 @@ Action::jump()
   m_story.writebounds( std::cerr << "Bound after jump: " ) << std::endl;
   m_story.active->restore_state( m_pos, m_room );
   std::cerr << "Jumping to room: " << m_room->getname() << ".\n";
-  if (m_control.shift())
+  if (m_control.cmds[PlayerInterface::Shift])
     {
       m_story.newbwd( m_room, m_pos, 0 );
       m_story.movbwd();
@@ -190,7 +216,7 @@ Action::jump()
   else
     {
       m_story.active->setthumb( 0 );
-      if (m_control.alt()) {
+      if (m_control.cmds[PlayerInterface::Alt]) {
         /*fast forward to end of time*/
         m_story.forward();
       }

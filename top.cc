@@ -13,13 +13,13 @@ main( int argc, char** argv )
   
   Action action( vc.screen );
   
-  action.moveto( EP::start_incoming() );
+  action.moveto( EPMap::start_incoming() );
   
   std::cerr << "Rolling!!!\n";
   
   try { action.run(); }
   
-  catch (Control::Quit) { action.endstats( std::cerr ); std::cerr << "Bye!\n"; }
+  catch (PlayerInterface::Quit) { action.endstats( std::cerr ); std::cerr << "Bye!\n"; }
   
   return 0;
 }

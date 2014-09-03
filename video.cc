@@ -13,7 +13,7 @@ VideoConfig::VideoConfig()
   
   SDL_WM_SetCaption( "FishBea", NULL );
   
-  screen = SDL_SetVideoMode( width, height, 16, SDL_SWSURFACE );
+  screen = SDL_SetVideoMode( width, height, 32, SDL_SWSURFACE );
   if (not screen)
     throw std::runtime_error( std::string( "Can't set video mode: " ) + SDL_GetError() + "\n" );
     
