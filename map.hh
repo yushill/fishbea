@@ -52,7 +52,8 @@ struct Room
   bool operator>(Room const& _rop) const { return this->cmp( _rop ) > 0; }
 };
 
-struct Gate {
+struct Gate
+{
   Room            room;
   Point<int32_t>  pos;
   Gate( Room const& _room, Point<int32_t> const& _pos ) : room(_room), pos(_pos) {}

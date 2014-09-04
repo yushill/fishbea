@@ -6,7 +6,7 @@
 namespace DiaMesh
 {
   extern Gate start_incoming();
-  // extern Gate end_upcoming();
+  extern Gate end_upcoming();
   // extern Gate end_incoming();
 };
 

@@ -9,61 +9,74 @@
 #include <cmath>
 
 namespace {
+  template <typename RoomBufT>
+  struct Pebbling
+  {
+    Room room;
+    typename RoomBufT::PebbleBoard board;
+    
+    Pebbling( RoomBufT const& _roombuf ) : room(&_roombuf), board(_roombuf) {}
+    bool match( Room _room, Point<int32_t> pos, bool fire )
+    {
+      if (_room != room) return false;
+      pos -= (Point<int32_t>( VideoConfig::width, VideoConfig::height ) - Point<int32_t>(RoomBufT::side,RoomBufT::side) * RoomBufT::blocsize) / 2;
+      if ((pos.m_y < 0) or (pos.m_x < 0)) return false;
+      pos /= RoomBufT::blocsize;
+      if ((pos.m_y >= RoomBufT::side) or (pos.m_x >= RoomBufT::side)) return false;
+      board.activate( pos );
+      return false;
+    }
+  };
+  
+  template <typename RoomBufT>
+  bool pebbleprocess( RoomBufT const& roombuf, Action& _action )
+  {
+    // Collision items precomputed from scene rendering
+    Pebbling<RoomBufT> pebbling( roombuf );
+    {
+      TimeLine *tl = _action.m_story.active, *eotl = _action.m_story.active;
+      do { tl->match( _action.m_story.now(), pebbling ); } while ((tl = tl->fwd()) != eotl);
+    }
+
+    for (int32_t y = 0; y < roombuf.side; ++y) {
+      for (int32_t x = 0; x < roombuf.side; ++x) {
+        Point<int32_t> blocpos( 2*x+1-roombuf.side, 2*y+1-roombuf.side );
+        blocpos = (blocpos*roombuf.blocsize + Point<int32_t>( VideoConfig::width, VideoConfig::height ))/2;
+        Pixel bloc[roombuf.blocsize][roombuf.blocsize];
+        uint8_t alpha = pebbling.board.active( mkpoint(x,y) ) ? 170 : 85;
+        for (int pix = 0; pix < roombuf.blocsize*roombuf.blocsize; ++pix)
+          bloc[pix/roombuf.blocsize][pix%roombuf.blocsize].set( 0xff, 0xff, 0xff, alpha );
+        _action.blit( blocpos, bloc );
+      }
+    }
+    
+    _action.normalmotion();
+    return false;
+  }
+    
   struct DiaMeshRoomBuf : public virtual RoomBuf
   {
     int cmp( RoomBuf const& _rb ) const { return 0; }
     std::string getname() const { std::ostringstream oss; oss << "DiaMeshRoom"; return oss.str(); }
     
-    struct Pebbling
-    {
-      Room room;
-      uint32_t values;
-      static int const side = 5;
-      static int32_t const blocsize = 64;
-      
-      Pebbling( Room _room ) : room(_room), values() {}
-      bool get( Point<int32_t> const& pos ) const { return (values >> (pos.m_y*side+pos.m_x)) & 1; }
-      bool match( Room _room, Point<int32_t> pos, bool fire )
-      {
-        if (_room != room) return false;
-        pos -= (Point<int32_t>( VideoConfig::width, VideoConfig::height ) - Point<int32_t>(side,side) * blocsize) / 2;
-        if ((pos.m_y < 0) or (pos.m_x < 0)) return false;
-        pos /= blocsize;
-        if ((pos.m_y >= side) or (pos.m_x >= side)) return false;
-        values |= (1 << (pos.m_y*side+pos.m_x));
-        return false;
-      }
-      void draw( Action& _action ) const
-      {
-        for (int idx = 0; idx < side*side; ++ idx) {
-          Point<int32_t> pos( 2*(idx % side)+1-side, 2*(idx/side)+1-side );
-          pos = (pos*blocsize + Point<int32_t>( VideoConfig::width, VideoConfig::height ))/2;
-          Pixel bloc[blocsize][blocsize];
-          uint8_t alpha = ((values >> idx) & 1) ? 170 : 85;
-          for (int pix = 0; pix < blocsize*blocsize; ++pix)
-            bloc[pix/blocsize][pix%blocsize].set( 0xff, 0xff, 0xff, alpha );
-          _action.blit( pos, bloc );
-        }
-      }
-    };
+    static int const side = 5;
+    static int32_t const blocsize = 64;
     
     void
     process( Action& _action ) const
     {
-      // Collision items precomputed from scene rendering
-      Pebbling pebbling( this );
-      {
-        TimeLine *tl = _action.m_story.active, *eotl = _action.m_story.active;
-        do { tl->match( _action.m_story.now(), pebbling ); } while ((tl = tl->fwd()) != eotl);
-      }
-
-      // Scene Draw
       _action.blit( gallery::classic_bg );
-      pebbling.draw( _action );
-  
-      _action.normalmotion();
-    
+      bool victory = pebbleprocess( *this, _action );
+      if (victory) _action.moveto( DiaMesh::end_upcoming() );
     }
+    
+    struct PebbleBoard
+    {
+      PebbleBoard(DiaMeshRoomBuf const&) { for (int idx = 0; idx < side*side; ++idx) (&table[0][0])[idx] = false; }
+      bool table[side][side];
+      void activate( Point<int32_t> const& p ) { table[p.m_y][p.m_x] = true; }
+      bool active( Point<int32_t> const& p ) { return table[p.m_y][p.m_x]; }
+    };
   };
 }
 

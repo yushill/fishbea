@@ -35,3 +35,4 @@ Gate Spiral::end_upcoming() { return Slalom::start_incoming(); }
 Gate Slalom::start_upcoming() { return Spiral::end_incoming(); }
 
 Gate Slalom::end_upcoming() { return ExpMap::start_incoming(); }
+Gate DiaMesh::end_upcoming() { return ExpMap::start_incoming(); }

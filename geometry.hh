@@ -31,4 +31,7 @@ struct Point
   dist_type m_x, m_y;
 };
 
+template <typename dist_type>
+Point<dist_type> mkpoint( dist_type x, dist_type y ) { return Point<dist_type>( x, y ); }
+
 #endif /* __GEOMETRY_HH__ */
