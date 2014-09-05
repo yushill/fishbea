@@ -25,19 +25,6 @@ struct Character
   {}
 };
 
-struct Ghost
-{
-  Room           room;
-  Point<int32_t> pos;
-  Ghost( Room _room ) : room(_room), pos() {}
-  bool match( Room _room, Point<int32_t> const& _pos, bool fire )
-  {
-    if (_room != room) return false;
-    pos = _pos;
-    return true;
-  }
-};
-
 struct TimeLine
 {
   struct Chunk {
@@ -88,8 +75,27 @@ struct TimeLine
   void          update_usetime();
   void          compress();
   void          restore_state( Point<float>& _pos, Room& _room ) const;
-  bool          locate( date_t& _date, Ghost& _pos ) const;
-  
+  template <typename T>
+  bool           find( date_t _date, T& _filter )
+  {
+    Map::const_iterator itr = m_map.lower_bound( _date );
+    
+    if (itr == m_map.end()) {
+      Chunk const& chunk = (--itr)->second;
+      if ((_date >= itr->first) or (chunk.steps.size() == 0)) throw "NoNoNo";
+      Character const& chr = chunk.steps.front();
+      // Found a future occurence of character
+      return _filter.match( +1, chunk.rooms[chr.room], Point<int32_t>( chr.xpos, chr.ypos ), chr.fire );
+    }
+    // Fount a current or past occurence of a character
+    Chunk const& chunk = itr->second;
+    date_t offset = _date - itr->first;
+    bool past = (offset >= chunk.steps.size());
+    Character const& chr = past ? chunk.steps.back() : chunk.steps[offset];
+    
+    return _filter.match( past ? -1 : 0, chunk.rooms[chr.room], Point<int32_t>( chr.xpos, chr.ypos ), chr.fire );
+  }
+    
   template <typename T>
   bool          match( date_t _date, T& _filter )
   {

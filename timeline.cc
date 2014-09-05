@@ -202,37 +202,6 @@ TimeLine::restore_state( Point<float>& _pos, Room& _room ) const
   _room = chunk.rooms[chr.room];
 };
 
-bool
-TimeLine::locate( date_t& _date, Ghost& ghost ) const
-{
-  Map::const_iterator itr = m_map.begin();
-  {
-    Chunk const& chunk = itr->second;
-    date_t size = chunk.steps.size();
-    if (_date >= (itr->first + size)) {
-      if (size <= 0) throw "NoNoNo";
-      Character const& chr = chunk.steps.back();
-      if (chunk.rooms[chr.room] != ghost.room) return false;
-      _date = (itr->first + size - 1);
-      ghost.pos = Point<int32_t>( chr.xpos, chr.ypos );
-      return true;
-    }
-  }
-  itr = m_map.end(); --itr;
-  {
-    Chunk const& chunk = itr->second;
-    if (_date < itr->first) {
-      if (chunk.steps.size() == 0) throw "NoNoNo";
-      Character const& chr = chunk.steps.front();
-      if (chunk.rooms[chr.room] != ghost.room) return false;
-      _date = itr->first;
-      ghost.pos = Point<int32_t>( chr.xpos, chr.ypos );
-      return true;
-    }
-  }
-  return false;
-}
-
 void
 TimeLine::getbounds( date_t& lo, date_t& hi ) const
 {

@@ -55,6 +55,25 @@ Action::~Action()
   SDL_FreeSurface( m_scratch );
 }
 
+struct Ghost
+{
+  Room    room;
+  Action& action;
+  
+  Ghost( Room _room, Action& _action ) : room(_room), action(_action) {}
+  bool match( int when, Room _room, Point<int32_t> const& _pos, bool fire )
+  {
+    if (_room != room) return false;
+    switch (when) {
+    case -1:  action.blit( _pos,  gallery::red_ghost ); break;
+    case  0:  action.blit( _pos, gallery::gray_ghost ); break;
+    case +1:  action.blit( _pos, gallery::blue_ghost ); break;
+    };
+    return false;
+  }
+};
+
+
 void Action::run()
 {
   for (;;) {
@@ -80,15 +99,10 @@ void Action::run()
       cutmotion( Point<float>( -4, VideoConfig::height+4 ), Point<float>( -4, -4 ) );
       this->blit( m_origin.rebind<int32_t>(), gallery::hero );
       
+      Ghost ghost(curroom,*this);
+      date_t now = m_story.now();
       for (TimeLine *tl = m_story.firstghost(), *eotl = m_story.active; tl != eotl; tl = tl->fwd())
-        {
-          date_t now = m_story.now(), gdate = now;
-          Ghost ghost(curroom);
-          if (tl->match( now, ghost ))
-            this->blit( ghost.pos, gallery::gray_ghost );
-          if (tl->locate( gdate, ghost ))
-            this->blit( ghost.pos, (now < gdate) ? gallery::blue_ghost : gallery::red_ghost ); 
-        }
+        tl->find( now, ghost );
       
       if (m_control.getandclear(PlayerInterface::Branch)) {
         SDL_Surface* thumb = SDL_DisplayFormatAlpha( m_screen );
