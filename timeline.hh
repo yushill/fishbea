@@ -76,7 +76,7 @@ struct TimeLine
   void          compress();
   void          restore_state( Point<float>& _pos, Room& _room ) const;
   template <typename T>
-  bool           find( date_t _date, T& _filter )
+  bool          find( date_t _date, T& _filter )
   {
     Map::const_iterator itr = m_map.lower_bound( _date );
     

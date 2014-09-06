@@ -16,9 +16,9 @@ namespace {
     typename RoomBufT::PebbleBoard board;
     
     Pebbling( RoomBufT const& _roombuf ) : room(&_roombuf), board(_roombuf) {}
-    bool match( Room _room, Point<int32_t> pos, bool fire )
+    bool match( int when, Room _room, Point<int32_t> pos, bool fire )
     {
-      if (_room != room) return false;
+      if ((_room != room) or (when > 0)) return false;
       pos -= (Point<int32_t>( VideoConfig::width, VideoConfig::height ) - Point<int32_t>(RoomBufT::side,RoomBufT::side) * RoomBufT::blocsize) / 2;
       if ((pos.m_y < 0) or (pos.m_x < 0)) return false;
       pos /= RoomBufT::blocsize;
@@ -35,7 +35,7 @@ namespace {
     Pebbling<RoomBufT> pebbling( roombuf );
     {
       TimeLine *tl = _action.m_story.active, *eotl = _action.m_story.active;
-      do { tl->match( _action.m_story.now(), pebbling ); } while ((tl = tl->fwd()) != eotl);
+      do { tl->find( _action.m_story.now(), pebbling ); } while ((tl = tl->fwd()) != eotl);
     }
 
     for (int32_t y = 0; y < roombuf.side; ++y) {
