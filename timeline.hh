@@ -87,7 +87,7 @@ struct TimeLine
       // Found a future occurence of character
       return _filter.match( +1, chunk.rooms[chr.room], Point<int32_t>( chr.xpos, chr.ypos ), chr.fire );
     }
-    // Fount a current or past occurence of a character
+    // Found a current or past occurence of a character
     Chunk const& chunk = itr->second;
     date_t offset = _date - itr->first;
     bool past = (offset >= chunk.steps.size());
