@@ -31,6 +31,9 @@ namespace {
   template <typename RoomBufT>
   bool pebbleprocess( RoomBufT const& roombuf, Action& _action )
   {
+    // Vertical walls
+    _action.normalmotion();
+    
     // Collision items precomputed from scene rendering
     Pebbling<RoomBufT> pebbling( roombuf );
     {
@@ -67,6 +70,7 @@ namespace {
           pt1 = (pt1*roombuf.blocsize + Point<int32_t>( VideoConfig::width, VideoConfig::height ))/2;
           Point<int32_t> pt2 = pt1 + Point<int32_t>( roombuf.blocsize, 0 );
           _action.blit( (pt1+pt2)/2, bloc );
+          _action.cutmotion( pt1.rebind<float>(), pt2.rebind<float>() );
         }
       }
     }
@@ -83,12 +87,11 @@ namespace {
           pt1 = (pt1*roombuf.blocsize + Point<int32_t>( VideoConfig::width, VideoConfig::height ))/2;
           Point<int32_t> pt2 = pt1 + Point<int32_t>( 0, roombuf.blocsize );
           _action.blit( (pt1+pt2)/2, bloc );
+          _action.cutmotion( pt1.rebind<float>(), pt2.rebind<float>() );
         }
       }
     }
     
-    // Vertical walls
-    _action.normalmotion();
     return false;
   }
   
