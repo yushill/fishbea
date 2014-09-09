@@ -9,8 +9,9 @@ struct SDL_Surface;
 
 struct VideoConfig
 {
-  static const int width = 640;
-  static const int height = 384;
+  static const int32_t width = 640;
+  static const int32_t height = 384;
+  static Point<int32_t> diag() { return Point<int32_t>( width, height ); }
   
   VideoConfig();
   ~VideoConfig();

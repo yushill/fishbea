@@ -48,7 +48,7 @@ namespace
       bool over_end, over_start;
   
       {
-        Point<int32_t> pos( VideoConfig::width/2, VideoConfig::height/2 );
+        Point<int32_t> pos( VideoConfig::diag()/2 );
         over_end = (pos.rebind<float>() - _action.pos()).sqnorm() <= 24*24;
         _action.blit( pos, over_end ? gallery::shiny_shell : gallery::shell );
       }
