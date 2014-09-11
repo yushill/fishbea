@@ -14,10 +14,10 @@ struct PlayerInterface
     // Action
     Branch = 0, Fire, Jump,
     // Time Menu
-    Right, Left, Down, Up, DelFwd, DelBwd, Select,
+    Right, Left, Down, Up, DelFwd, DelBwd, Select = Branch,
     // Mods
     Shift, Alt,
-    Debug,
+    Debug = DelBwd,
     CmdCodeCount
   };
   std::bitset<CmdCodeCount> cmds;

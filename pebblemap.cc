@@ -9,7 +9,8 @@
 #include <cmath>
 
 namespace {
-  enum PebbleWall { NONE=0, PLAIN, FWD, BWD };
+  enum PebbleWall { PLAIN=0, FWD, BWD, NONE };
+  
   template <typename RoomBufT>
   struct Pebbling
   {
@@ -60,8 +61,14 @@ namespace {
     }
     
     { // Horizontal walls
-      Pixel bloc[4][roombuf.blocsize];
-      for (int32_t y = 0; y < 4; ++y) for (int32_t x = 0; x < roombuf.blocsize; ++x) bloc[y][x].set( 0, 0, 0, 0xff );
+      Pixel bloc[3][4][roombuf.blocsize];
+      for (int32_t y = 0; y < 4; ++y)
+        for (int32_t x = 0; x < roombuf.blocsize; ++x)
+          {
+            bloc[0][y][x].set( 0, 0, 0, 0xff );
+            bloc[1][y][x].set( 85*~y, 85*~y, 85*~y, 0xff );
+            bloc[2][y][x].set( 85*y, 85*y, 85*y, 0xff );
+          }
       
       for (int32_t y = 0; y < (roombuf.side+1); ++y) {
         for (int32_t x = 0; x < (roombuf.side+0); ++x) {
@@ -70,24 +77,29 @@ namespace {
           Point<int32_t>
             pt1( (Point<int32_t>( 2*x-roombuf.side, 2*y-roombuf.side )*roombuf.blocsize + VideoConfig::diag())/2 ),
             pt2( (pt1 + Point<int32_t>( roombuf.blocsize, 0 )) );
-          _action.blit( (pt1+pt2)/2, bloc );
+          _action.blit( (pt1+pt2)/2, bloc[wall] );
           _action.cutmotion( pt1.rebind<float>(), pt2.rebind<float>() );
         }
       }
     }
     
     { // Vertical walls
-      Pixel bloc[roombuf.blocsize][4];
-      for (int32_t y = 0; y < roombuf.blocsize; ++y) for (int32_t x = 0; x < 4; ++x) bloc[y][x].set( 0, 0, 0, 0xff );
+      Pixel bloc[3][roombuf.blocsize][4];
+      for (int32_t y = 0; y < roombuf.blocsize; ++y)
+        for (int32_t x = 0; x < 4; ++x) {
+          bloc[0][y][x].set( 0, 0, 0, 0xff );
+          bloc[1][y][x].set( 85*~x, 85*~x, 85*~x, 0xff );
+          bloc[2][y][x].set( 85*x, 85*x, 85*x, 0xff );
+        }
       
       for (int32_t y = 0; y < (roombuf.side+0); ++y) {
         for (int32_t x = 0; x < (roombuf.side+1); ++x) {
           PebbleWall wall = pebbling.board.vwall( x, y );
-          if (wall == 0) continue;
+          if (wall == NONE) continue;
           Point<int32_t>
             pt1( (Point<int32_t>( 2*x-roombuf.side, 2*y-roombuf.side )*roombuf.blocsize + VideoConfig::diag())/2 ),
             pt2( (pt1 + Point<int32_t>( 0, roombuf.blocsize )) );
-          _action.blit( (pt1+pt2)/2, bloc );
+          _action.blit( (pt1+pt2)/2, bloc[0] );
           _action.cutmotion( pt1.rebind<float>(), pt2.rebind<float>() );
         }
       }
@@ -120,14 +132,16 @@ namespace {
       bool active( Point<int32_t> const& p ) { return table[p.m_y][p.m_x]; }
       PebbleWall hwall( int32_t x, int32_t y )
       {
-        if (y == 0) return x ? PLAIN : NONE;
+        if ((y == 0) and (x == 0)) return NONE;
+        if ((y == 0) or (y >= side)) return PLAIN;
         bool va = table[y-1][x];
         if (x == 0) return va ? NONE : FWD;
         return (va and table[y][x-1]) ? NONE : FWD;
       }
       PebbleWall vwall( int32_t x, int32_t y )
       {
-        if (x == 0) return y ? PLAIN : NONE;
+        if ((x == 0) and (y == 0)) return NONE;
+        if ((x == 0) or (x >= side)) return PLAIN;
         bool ha = table[y][x-1];
         if (y == 0) return ha ? NONE : FWD;
         return (ha and table[y-1][x]) ? NONE : FWD;
