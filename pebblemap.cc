@@ -26,12 +26,14 @@ namespace {
   struct Pebbling
   {
     Room room;
+    uintptr_t count;
     typename RoomBufT::PebbleBoard board;
     
-    Pebbling( RoomBufT const& _roombuf ) : room(&_roombuf), board(_roombuf) {}
+    Pebbling( RoomBufT const& _roombuf ) : room(&_roombuf), count(0), board(_roombuf) {}
     bool match( int when, Room _room, Point<int32_t> pos, bool fire )
     {
       if ((_room != room) or (when > 0)) return false;
+      board.append();
       pos -= (VideoConfig::diag() - Point<int32_t>(RoomBufT::side,RoomBufT::side) * RoomBufT::blocsize) / 2;
       if ((pos.m_y < 0) or (pos.m_x < 0)) return false;
       pos /= RoomBufT::blocsize;
@@ -138,12 +140,14 @@ namespace {
     
     struct PebbleBoard
     {
-      PebbleBoard(DiaMeshRoomBuf const&) { for (int idx = 0; idx < side*side; ++idx) (&table[0][0])[idx] = false; }
+      PebbleBoard(DiaMeshRoomBuf const&) : count(4) { for (int idx = 0; idx < side*side; ++idx) (&table[0][0])[idx] = false; }
       bool table[side][side];
+      intptr_t count;
       void activate( Point<int32_t> const& p ) { table[p.m_y][p.m_x] = true; }
       bool active( Point<int32_t> const& p ) { return table[p.m_y][p.m_x]; }
       PebbleWall hwall( int32_t x, int32_t y )
       {
+        if (count < 0) return PLAIN;
         if ((y == 0) and (x == 0)) return NONE;
         if ((y == 0) or (y >= side)) return PLAIN;
         bool va = table[y-1][x];
@@ -152,16 +156,18 @@ namespace {
       }
       PebbleWall vwall( int32_t x, int32_t y )
       {
+        if (count < 0) return PLAIN;
         if ((x == 0) and (y == 0)) return NONE;
         if ((x == 0) or (x >= side)) return PLAIN;
         bool ha = table[y][x-1];
         if (y == 0) return ha ? NONE : FWD;
         return (ha and table[y-1][x]) ? NONE : FWD;
       }
+      void append() { count -= 1; }
     };
   };
 }
 
-Gate DiaMesh::start_incoming() { return Gate( new DiaMeshRoomBuf, Point<int32_t>(50, 192) ); }
+Gate DiaMesh::start_incoming() { return Gate( new DiaMeshRoomBuf, Point<int32_t>(50, 190) ); }
 // Gate DiaMesh::end_incoming() { return Gate( new DiaMeshRoomBuf, Point<int32_t>(480, 192) ); }
 
