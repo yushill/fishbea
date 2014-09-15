@@ -7,6 +7,8 @@
 #include <bitset>
 #include <iosfwd>
 
+#include <iostream>
+
 struct PlayerInterface
 {
   struct Quit {};
@@ -14,10 +16,10 @@ struct PlayerInterface
     // Action
     Branch = 0, Fire, Jump,
     // Time Menu
-    Right, Left, Down, Up, DelFwd, DelBwd, Select = Branch,
+    Right, Left, Down, Up, DelFwd, DelBwd, Select,
     // Mods
     Shift, Alt,
-    Debug = DelBwd,
+    Debug,
     CmdCodeCount
   };
   std::bitset<CmdCodeCount> cmds;
@@ -27,7 +29,6 @@ struct PlayerInterface
   void            collect();
   
   Point<float>    motion() const;
-  bool getandclear(CmdCode code) { bool res = cmds[code]; cmds.reset(code); return res; }
 };
 
 struct Action

@@ -7,8 +7,19 @@
 #include <sstream>
 #include <gallery.hh>
 #include <cmath>
+#include <cstdlib>
 
 namespace {
+  template <typename RoomBufT>
+  void
+  wallcolor( RoomBufT const& rb, int32_t w, int32_t n, int32_t now, Pixel& pix )
+  {
+    bool const mid = (std::abs(w - RoomBufT::blocsize/2) < 8);
+    uint8_t const a = mid ? (16*now + 32*n) : 0;
+    uint8_t const b = mid ? 0xff : 0;
+    pix.set( a, a, b, 0xff );
+  }
+  
   enum PebbleWall { PLAIN=0, FWD, BWD, NONE };
   
   template <typename RoomBufT>
@@ -61,14 +72,14 @@ namespace {
     }
     
     { // Horizontal walls
-      Pixel bloc[3][4][roombuf.blocsize];
-      for (int32_t y = 0; y < 4; ++y)
-        for (int32_t x = 0; x < roombuf.blocsize; ++x)
-          {
-            bloc[0][y][x].set( 0, 0, 0, 0xff );
-            bloc[1][y][x].set( 85*~y, 85*~y, 85*~y, 0xff );
-            bloc[2][y][x].set( 85*y, 85*y, 85*y, 0xff );
-          }
+      Pixel bloc[3][6][roombuf.blocsize];
+      for (int32_t y = 0; y < 6; ++y) {
+        for (int32_t x = 0; x < roombuf.blocsize; ++x) {
+          bloc[0][y][x].set( 0, 0, 0, 0xff );
+          wallcolor( roombuf, x, -y, _action.now(), bloc[1][y][x] );
+          wallcolor( roombuf, x, +y, _action.now(), bloc[2][y][x] );
+        }
+      }
       
       for (int32_t y = 0; y < (roombuf.side+1); ++y) {
         for (int32_t x = 0; x < (roombuf.side+0); ++x) {
@@ -84,13 +95,14 @@ namespace {
     }
     
     { // Vertical walls
-      Pixel bloc[3][roombuf.blocsize][4];
+      Pixel bloc[3][roombuf.blocsize][6];
       for (int32_t y = 0; y < roombuf.blocsize; ++y)
-        for (int32_t x = 0; x < 4; ++x) {
-          bloc[0][y][x].set( 0, 0, 0, 0xff );
-          bloc[1][y][x].set( 85*~x, 85*~x, 85*~x, 0xff );
-          bloc[2][y][x].set( 85*x, 85*x, 85*x, 0xff );
-        }
+        for (int32_t x = 0; x < 6; ++x)
+          {
+            bloc[0][y][x].set( 0, 0, 0, 0xff );
+            wallcolor( roombuf, y, -x, _action.now(), bloc[1][y][x] );
+            wallcolor( roombuf, y, +x, _action.now(), bloc[2][y][x] );
+          }
       
       for (int32_t y = 0; y < (roombuf.side+0); ++y) {
         for (int32_t x = 0; x < (roombuf.side+1); ++x) {
@@ -99,7 +111,7 @@ namespace {
           Point<int32_t>
             pt1( (Point<int32_t>( 2*x-roombuf.side, 2*y-roombuf.side )*roombuf.blocsize + VideoConfig::diag())/2 ),
             pt2( (pt1 + Point<int32_t>( 0, roombuf.blocsize )) );
-          _action.blit( (pt1+pt2)/2, bloc[0] );
+          _action.blit( (pt1+pt2)/2, bloc[wall] );
           _action.cutmotion( pt1.rebind<float>(), pt2.rebind<float>() );
         }
       }

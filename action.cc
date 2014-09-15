@@ -104,7 +104,8 @@ void Action::run()
       for (TimeLine *tl = m_story.firstghost(), *eotl = m_story.active; tl != eotl; tl = tl->fwd())
         tl->find( now, ghost );
       
-      if (m_control.getandclear(PlayerInterface::Branch)) {
+      if (m_control.cmds[PlayerInterface::Branch]) {
+        m_control.cmds.reset();
         SDL_Surface* thumb = SDL_DisplayFormatAlpha( m_screen );
         image_apply( Grayify(), thumb );
         m_story.newbwd( m_room, m_pos, thumb );
@@ -198,7 +199,7 @@ Action::jump()
     draw_timebar( tbs_full );
     this->flipandwait();
     m_control.collect();
-    if (m_control.getandclear(PlayerInterface::Select)) break;
+    if (m_control.cmds[PlayerInterface::Select]) break;
     if (m_story.active->single()) continue;
     int dir = 0;
     std::auto_ptr<TimeLine> aptl;
@@ -236,6 +237,7 @@ Action::jump()
       }
     }
   m_story.active->update_usetime();
+  m_control.cmds.reset();
 }
 
 void
