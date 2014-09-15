@@ -28,18 +28,26 @@ namespace {
     Room room;
     uintptr_t count;
     typename RoomBufT::PebbleBoard board;
-    
     Pebbling( RoomBufT const& _roombuf ) : room(&_roombuf), count(0), board(_roombuf) {}
-    bool match( int when, Room _room, Point<int32_t> pos, bool fire )
+    bool match( int when, Room _room, Point<int32_t> const& _pos, bool fire )
     {
       if ((_room != room) or (when > 0)) return false;
       board.append();
-      pos -= (VideoConfig::diag() - Point<int32_t>(RoomBufT::side,RoomBufT::side) * RoomBufT::blocsize) / 2;
-      if ((pos.m_y < 0) or (pos.m_x < 0)) return false;
-      pos /= RoomBufT::blocsize;
-      if ((pos.m_y >= RoomBufT::side) or (pos.m_x >= RoomBufT::side)) return false;
+      Point<int32_t> pos;
+      if (not gridpos( _pos, pos )) return false;
       board.activate( pos );
       return false;
+    }
+    
+    static bool gridpos( Point<int32_t> const& _initial, Point<int32_t>& _final )
+    {
+      Point<int32_t> tmp( _initial );
+      tmp -= ((VideoConfig::diag() - Point<int32_t>(RoomBufT::side,RoomBufT::side) * RoomBufT::blocsize) / 2);
+      if ((tmp.m_y < 0) or (tmp.m_x < 0)) return false;
+      tmp /= RoomBufT::blocsize;
+      if ((tmp.m_y >= RoomBufT::side) or (tmp.m_x >= RoomBufT::side)) return false;
+      _final = tmp;
+      return true;
     }
   };
   
@@ -119,6 +127,17 @@ namespace {
       }
     }
     
+    if (_action.fires()) {
+      Point<int32_t> pos;
+      if (pebbling.gridpos( _action.pos().rebind<int32_t>(), pos )) {
+        _action.fired();
+        if ((pos.m_x == (roombuf.side-1)) and (pos.m_y == (roombuf.side-1))) return true;
+        _action.moveto( DiaMesh::start_incoming() );
+      }
+          
+      
+    }
+    
     return false;
   }
   
@@ -140,7 +159,7 @@ namespace {
     
     struct PebbleBoard
     {
-      PebbleBoard(DiaMeshRoomBuf const&) : count(4) { for (int idx = 0; idx < side*side; ++idx) (&table[0][0])[idx] = false; }
+      PebbleBoard(DiaMeshRoomBuf const&) : count(5) { for (int idx = 0; idx < side*side; ++idx) (&table[0][0])[idx] = false; }
       bool table[side][side];
       intptr_t count;
       void activate( Point<int32_t> const& p ) { table[p.m_y][p.m_x] = true; }
