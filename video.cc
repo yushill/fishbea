@@ -47,4 +47,36 @@ load_image( std::string filename )
   return img;
 }
 
+void
+image_pngload( Pixel* _dst, uintptr_t _width, uintptr_t _height, char const* _filepath )
+{
+  SDL_Surface* img;
+  
+  if ((img = IMG_Load( _filepath )))
+    {
+      SDL_Surface* source = img;
+      img = SDL_DisplayFormatAlpha( source );
+      SDL_FreeSurface( source );
+    }
+  
+  if (not img)
+    {
+      std::cerr << "Can't open '" << _filepath << "'.\n";
+      throw "Unexpected SDL error";
+    }
+  
+  if ((uintptr_t(img->w) != _width) or (uintptr_t(img->h) != _height))
+    {
+      std::cerr << "Image dimensions mismatch (" << img->w << ", " << img->h
+                << ") for '" << _filepath << "': currently not supported.\n";
+      throw "Unexpected SDL error";
+    }
+  
+  Pixel* src = (Pixel*)(img->pixels);
+  for (uintptr_t idx = 0; idx < _width*_height; ++idx)
+    _dst[idx] = src[idx];
+  
+  SDL_FreeSurface( img );
+}
+
 ImageStore* ImageStore::pool = 0;

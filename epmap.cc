@@ -57,9 +57,9 @@ namespace {
       }
 
       // Scene Draw
-      _action.blit( gallery::classic_bg );
+      _action.cornerblit( Point<int32_t>(), gallery::classic_bg );
       for (int door = 0; door < 4; ++door )
-        _action.blit( Point<int32_t>( 64, 96+64*door ), code.bit( door ) ? gallery::shiny_starfish : gallery::starfish );
+        _action.centerblit( Point<int32_t>( 64, 96+64*door ), code.bit( door ) ? gallery::shiny_starfish : gallery::starfish );
   
       static Point<float> const exitpos( 479.5, 191.5 );
       bool fishexit = (_action.pos() - exitpos).sqnorm() <= 24*24;
@@ -79,7 +79,7 @@ namespace {
         hydro::effect( ephf.table, _action );
         _action.moremotion( hydro::motion( ephf.table, _action ) );
       }
-      _action.blit( exitpos.rebind<int32_t>(), fishexit ? gallery::shiny_shell : gallery::shell );
+      _action.centerblit( exitpos.rebind<int32_t>(), fishexit ? gallery::shiny_shell : gallery::shell );
     }
 
     static uint32_t const TheCode = 0xa;

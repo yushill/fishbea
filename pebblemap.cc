@@ -76,7 +76,7 @@ namespace {
           uint8_t alpha = pebbling.board.active( mkpoint(x,y) ) ? 170 : 85;
           for (int pix = 0; pix < roombuf.blocsize*roombuf.blocsize; ++pix)
             bloc[pix/roombuf.blocsize][pix%roombuf.blocsize].a = alpha;
-          _action.blit( blocpos, bloc );
+          _action.centerblit( blocpos, bloc );
         }
       }
     }
@@ -98,7 +98,7 @@ namespace {
           Point<int32_t>
             pt1( (Point<int32_t>( 2*x-roombuf.side, 2*y-roombuf.side )*roombuf.blocsize + VideoConfig::diag())/2 ),
             pt2( (pt1 + Point<int32_t>( roombuf.blocsize, 0 )) );
-          _action.blit( (pt1+pt2)/2, bloc[wall] );
+          _action.centerblit( (pt1+pt2)/2, bloc[wall] );
           _action.cutmotion( pt1.rebind<float>(), pt2.rebind<float>() );
         }
       }
@@ -121,7 +121,7 @@ namespace {
           Point<int32_t>
             pt1( (Point<int32_t>( 2*x-roombuf.side, 2*y-roombuf.side )*roombuf.blocsize + VideoConfig::diag())/2 ),
             pt2( (pt1 + Point<int32_t>( 0, roombuf.blocsize )) );
-          _action.blit( (pt1+pt2)/2, bloc[wall] );
+          _action.centerblit( (pt1+pt2)/2, bloc[wall] );
           _action.cutmotion( pt1.rebind<float>(), pt2.rebind<float>() );
         }
       }
@@ -152,7 +152,7 @@ namespace {
     void
     process( Action& _action ) const
     {
-      _action.blit( gallery::classic_bg );
+      _action.cornerblit( Point<int32_t>(), gallery::classic_bg );
       bool victory = pebbleprocess( *this, _action );
       if (victory) _action.moveto( DiaMesh::end_upcoming() );
     }

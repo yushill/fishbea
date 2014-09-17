@@ -1,6 +1,6 @@
 #include <timeline.hh>
 #include <geometry.hh>
-#include <SDL/SDL_video.h>
+#include <video.hh>
 #include <iostream>
 #include <sstream>
 #include <limits>
@@ -11,17 +11,12 @@
 #include <stdexcept>
 #include <inttypes.h>
 
-TimeLine::~TimeLine()
-{
-  if (m_thumb)
-    SDL_FreeSurface( m_thumb );
-}
+TimeLine::~TimeLine() { delete m_thumb; }
 
 void
-TimeLine::setthumb( SDL_Surface* _thumb )
+TimeLine::setthumb( Thumb* _thumb )
 {
-  if (m_thumb)
-    SDL_FreeSurface( m_thumb );
+  delete m_thumb;
   m_thumb = _thumb;
 }
 
@@ -56,7 +51,7 @@ TimeLine::TimeLine( date_t date )
   this->update_usetime();
 }
 
-TimeLine::TimeLine( date_t date, Room const& _room, Point<float> const& _position, bool _fire, SDL_Surface* thumb )
+TimeLine::TimeLine( date_t date, Room const& _room, Point<float> const& _position, bool _fire, Thumb* thumb )
   : m_fwd(this), m_bwd(this), m_usetime(), m_thumb(thumb)
 {
   Chunk& chunk = m_map.insert( m_map.end(), std::make_pair( date, Chunk() ) )->second;

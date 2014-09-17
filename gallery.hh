@@ -5,15 +5,15 @@
 
 struct gallery
 {
-  static SDL_Surface* hero;
-  static SDL_Surface* gray_ghost;
-  static SDL_Surface* blue_ghost;
-  static SDL_Surface* red_ghost;
-  static SDL_Surface* shell;
-  static SDL_Surface* shiny_shell;
-  static SDL_Surface* starfish;
-  static SDL_Surface* shiny_starfish;
-  static SDL_Surface* classic_bg;
+  static Pixel hero[36][48];
+  static Pixel gray_ghost[36][48];
+  static Pixel blue_ghost[36][48];
+  static Pixel red_ghost[36][48];
+  static Pixel shell[48][48];
+  static Pixel shiny_shell[48][48];
+  static Pixel starfish[32][48];
+  static Pixel shiny_starfish[32][48];
+  static screen_t classic_bg;
   
   static void __init__( SDL_Surface* _screen );
   static void __exit__();

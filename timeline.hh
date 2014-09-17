@@ -10,7 +10,7 @@
 
 typedef uint64_t date_t;
 
-struct SDL_Surface;
+struct Thumb;
 
 struct Character
 {
@@ -56,7 +56,7 @@ struct TimeLine
   
   // Contruction
   TimeLine( date_t date );
-  TimeLine( date_t date, Room const& _room, Point<float> const& _position, bool _fire, SDL_Surface* thumb );
+  TimeLine( date_t date, Room const& _room, Point<float> const& _position, bool _fire, Thumb* thumb );
   ~TimeLine();
   // No copies
   TimeLine( TimeLine const& _tl ) { throw "NoNoNo"; }
@@ -70,8 +70,8 @@ struct TimeLine
   bool          single() const { return (m_fwd == this) and (m_bwd == this); }
   
   void          append( date_t date, Room const& _room, Point<float> const& _position, bool _fire );
-  void          setthumb( SDL_Surface* newthumb );
-  SDL_Surface*  getthumb() { return m_thumb; };
+  void          setthumb( Thumb* newthumb );
+  Thumb*      getthumb() { return m_thumb; };
   void          update_usetime();
   void          compress();
   void          restore_state( Point<float>& _pos, Room& _room ) const;
@@ -115,7 +115,9 @@ struct TimeLine
   TimeLine*     m_bwd;
   Map           m_map;
   uintptr_t     m_usetime; /* last use time */
-  SDL_Surface*  m_thumb;
+  
+private:
+  Thumb*      m_thumb;
 };
 
 struct Story
@@ -141,7 +143,7 @@ struct Story
   
   date_t now() const { return eoa - 1; }
   TimeLine* firstghost() { return active->fwd(); }
-  void newbwd( Room const& _room, Point<float> const& _pos, SDL_Surface* thumb )
+  void newbwd( Room const& _room, Point<float> const& _pos, Thumb* thumb )
   {
     active->insbwd( new TimeLine( now(), _room, _pos, false, thumb ) );
     record_count += 1;

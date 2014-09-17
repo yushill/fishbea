@@ -44,13 +44,24 @@ struct Action
   void jump();
   bool fires() const { return m_control.cmds[PlayerInterface::Fire]; }
   void fired() { m_control.cmds.reset(PlayerInterface::Fire); }
+  // template <uintptr_t WIDTH, uintptr_t HEIGHT>
+  // void blit( Point<int32_t> const& _pos, Pixel (&img)[HEIGHT][WIDTH] ) { blit( _pos, &img[0][0], WIDTH, HEIGHT ); }
+  // void blit( Point<int32_t> const& _pos, Pixel* data, uintptr_t width, uintptr_t height );
+  // void blit( Point<int32_t> const& _pos, SDL_Surface* _src );
+  // void blit( SDL_Surface* _src );
+  // SDL_Surface* scratch( SDL_Surface* _scratch=0 ) { return m_scratch; }
+  // SDL_Surface* screen() { return m_screen; }
+
+  void finalblit();
+  screen_t          m__screen;
+  void cornerblit( Point<int32_t> const& _pos, Pixel* data, uintptr_t width, uintptr_t height );
   template <uintptr_t WIDTH, uintptr_t HEIGHT>
-  void blit( Point<int32_t> const& _pos, Pixel (&img)[HEIGHT][WIDTH] ) { blit( _pos, &img[0][0], WIDTH, HEIGHT ); }
-  void blit( Point<int32_t> const& _pos, Pixel* data, uintptr_t width, uintptr_t height );
-  void blit( Point<int32_t> const& _pos, SDL_Surface* _src );
-  void blit( SDL_Surface* _src );
-  SDL_Surface* scratch( SDL_Surface* _scratch=0 ) { return m_scratch; }
-  SDL_Surface* screen() { return m_screen; }
+  void centerblit( Point<int32_t> const& _pos, Pixel (&img)[HEIGHT][WIDTH] )
+  { cornerblit( _pos - Point<int32_t>( WIDTH, HEIGHT )/2, &img[0][0], WIDTH, HEIGHT ); }
+  template <uintptr_t WIDTH, uintptr_t HEIGHT>
+  void cornerblit( Point<int32_t> const& _pos, Pixel (&img)[HEIGHT][WIDTH] )
+  { cornerblit( _pos, &img[0][0], WIDTH, HEIGHT ); }
+  
 
 private:  
   SDL_Surface*      m_screen;

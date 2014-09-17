@@ -29,29 +29,25 @@ namespace hydro
   template <typename mapT, typename actionT>
   void effect( mapT const& _table, actionT& _action )
   {
-    SDL_Surface* scratch = _action.scratch();
+    screen_t& screen = _action.m__screen;
     date_t date = _action.now();
-    uint8_t* img = (uint8_t*)scratch->pixels;
-    for (int y = 0, ystop = scratch->h; y < ystop; ++y) {
-      uint8_t* line = &img[y*scratch->w*4];
-      for (int x = 0, xstop = scratch->w; x < xstop; ++x) {
-        uint8_t* pix = &line[x*4];
-        pix[0] = 0xff;pix[1] = 0xff;pix[2] = 0xff;pix[3] = 0xff;
-        uint8_t* alpha = &pix[3];
+    for (int y = 0, ystop = pixheight(screen); y < ystop; ++y) {
+      for (int x = 0, xstop = pixwidth(screen); x < xstop; ++x) {
         int32_t value = _table[y][x].value;
-        if (value & 0x80000000) { *alpha = 0; continue; }
+        if (value & 0x80000000) continue;
         uint32_t lum = ((value - date*(1<<28)) >> 22) & 0x1ff;
         if (lum >= 0x100) { lum = 0x1ff - lum; }
         Point<float> g;
-        if (not grad( _table, Point<int32_t>(x,y), g )) { *alpha = 0; continue; }
+        if (not grad( _table, Point<int32_t>(x,y), g )) continue;
         double sqn = g.sqnorm();
-        int32_t decay = 128*std::max(1.-sqn, 0.) ;
-        // int32_t decay = 256-value*8/(1<<28);
-        *alpha = lum*decay >> 8;
+        int32_t decay = 128*std::max(1.-sqn, 0.);
+        uint32_t alpha = (lum*decay >> 8) & 0xff;
+        uint32_t a = 256-alpha, b = (alpha+1)*0xff;
+        screen[y][x].b = (a*screen[y][x].b + b) >> 8;
+        screen[y][x].g = (a*screen[y][x].g + b) >> 8;
+        screen[y][x].r = (a*screen[y][x].r + b) >> 8;
       }
     }
-
-    _action.blit( _action.scratch( scratch ) );
   }
 
   template <typename mapT, typename actionT>

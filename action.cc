@@ -47,7 +47,7 @@ Action::Action( SDL_Surface* _screen )
     m_next_ticks( SDL_GetTicks() + FramePeriod ), m_pos(),
     m_story(), m_room()
 {
-  image_apply( Fill<0xff,0xff,0xff,0x0>(), m_scratch );
+  image_apply( Fill<0,0,0,0xff>(), m__screen );
 }
 
 Action::~Action()
@@ -65,9 +65,9 @@ struct Ghost
   {
     if (_room != room) return false;
     switch (when) {
-    case -1:  action.blit( _pos,  gallery::red_ghost ); break;
-    case  0:  action.blit( _pos, gallery::gray_ghost ); break;
-    case +1:  action.blit( _pos, gallery::blue_ghost ); break;
+    case -1:  action.centerblit( _pos,  gallery::red_ghost ); break;
+    case  0:  action.centerblit( _pos, gallery::gray_ghost ); break;
+    case +1:  action.centerblit( _pos, gallery::blue_ghost ); break;
     };
     return false;
   }
@@ -97,7 +97,7 @@ void Action::run()
       cutmotion( Point<float>( VideoConfig::width+4, -4 ), Point<float>( VideoConfig::width+4, VideoConfig::height+4 ) );
       cutmotion( Point<float>( VideoConfig::width+4, VideoConfig::height+4 ), Point<float>( -4, VideoConfig::height+4 ) );
       cutmotion( Point<float>( -4, VideoConfig::height+4 ), Point<float>( -4, -4 ) );
-      this->blit( m_origin.rebind<int32_t>(), gallery::hero );
+      this->centerblit( m_origin.rebind<int32_t>(), gallery::hero );
       
       Ghost ghost(curroom,*this);
       date_t now = m_story.now();
@@ -106,8 +106,8 @@ void Action::run()
       
       if (m_control.cmds[PlayerInterface::Branch]) {
         m_control.cmds.reset();
-        SDL_Surface* thumb = SDL_DisplayFormatAlpha( m_screen );
-        image_apply( Grayify(), thumb );
+        Thumb* thumb = new Thumb( m__screen );
+        image_apply( Grayify(), thumb->screen );
         m_story.newbwd( m_room, m_pos, thumb );
       }
     
@@ -148,6 +148,8 @@ Action::draw_timebar( Action::timebar_style tbs )
 void
 Action::flipandwait()
 {
+  finalblit();
+  
   if (SDL_Flip( m_screen ) == -1)
     {
       std::cerr << "Can't flip m_screen: " << SDL_GetError() << '\n';
@@ -171,31 +173,30 @@ Action::jump()
   std::cerr << "Jumping from room: " << m_room->getname() << ".\n";
   m_story.active->compress();
     
-  SDL_Surface* thumb = SDL_DisplayFormatAlpha( m_screen );
+  //SDL_Surface* thumb = SDL_DisplayFormatAlpha( m_screen );
+  Thumb* thumb = new Thumb( m__screen );
   this->flipandwait();
   {
     // Animate thumb apparition
-    SDL_Surface* begin = SDL_DisplayFormatAlpha( thumb );
-    SDL_Surface* slide = SDL_DisplayFormatAlpha( thumb );
-    image_apply( Grayify(), thumb );
+    screen_t begin; pixcpy( begin, m__screen );
+    screen_t slide; pixcpy( slide, m__screen );
+    image_apply( Grayify(), thumb->screen );
     // m_screen->h = oldh;
     
     for (int idx = 0; idx < 16; ++idx)
       {
-        image_apply( Fade(slide,begin,thumb,double(idx)/16.), slide );
-        this->blit( slide );
+        image_fade( slide, begin, thumb->screen, idx*16 );
+        this->cornerblit( Point<int32_t>(0,0), slide );
         this->flipandwait();
       }
-    SDL_FreeSurface( begin );
-    SDL_FreeSurface( slide );
   }
   
   m_story.active->setthumb( thumb );
   m_story.writebounds( std::cerr << "Bound before jump: " ) << std::endl;
-    
+  
   while (true) {
-    SDL_Surface* curthumb = m_story.active->getthumb();
-    this->blit( curthumb );
+    Thumb* curthumb = m_story.active->getthumb();
+    this->cornerblit( Point<int32_t>(), curthumb->screen );
     draw_timebar( tbs_full );
     this->flipandwait();
     m_control.collect();
@@ -208,14 +209,14 @@ Action::jump()
     else if (m_control.cmds[PlayerInterface::DelFwd]) { aptl.reset( m_story.popfwd() ); dir = -640; }
     else if (m_control.cmds[PlayerInterface::DelBwd]) { aptl.reset( m_story.popbwd() ); dir = +640; }
     else { continue; }
-    SDL_Surface* nxtthumb = m_story.active->getthumb();
+    Thumb* nxtthumb = m_story.active->getthumb();
       
     for (int idx = 0; idx < 24; ++idx) {
-      Point<int32_t> cur( 320+((idx*dir)/24), 192 );
-      Point<int32_t> nxt( 320+(((idx - 24)*dir)/24), 192 );
+      Point<int32_t> cur( ((idx*dir)/24), 0 );
+      Point<int32_t> nxt( (((idx - 24)*dir)/24), 0 );
         
-      this->blit( cur, curthumb );
-      this->blit( nxt, nxtthumb );
+      this->cornerblit( cur, curthumb->screen );
+      this->cornerblit( nxt, nxtthumb->screen );
         
       this->flipandwait();
     }
@@ -241,39 +242,44 @@ Action::jump()
 }
 
 void
-Action::blit( Point<int32_t> const& _pos, Pixel* _pixels, uintptr_t _width, uintptr_t _height )
+Action::finalblit()
 {
-  void* pixels = reinterpret_cast<void*>(_pixels);
-  int height = _height, width = _width;
-  Uint16 pitch = _width*4;
-  std::swap( pixels, m_scratch->pixels );
-  std::swap( width, m_scratch->w );
-  std::swap( height, m_scratch->h );
-  std::swap( pitch, m_scratch->pitch );
-  blit( _pos, m_scratch );
-  std::swap( pixels, m_scratch->pixels );
-  std::swap( width, m_scratch->w );
-  std::swap( height, m_scratch->h );
-  std::swap( pitch, m_scratch->pitch );
-}
-
-void
-Action::blit( Point<int32_t> const& _pos, SDL_Surface* _src )
-{
-  SDL_Rect offset;
-  (_pos - (Point<int32_t>(_src->w, _src->h)/2)).pull( offset );
+  void* pixels = reinterpret_cast<void*>(&m__screen[0][0]);
   
-  SDL_BlitSurface( _src, NULL, m_screen, &offset );
-}
-
-void
-Action::blit( SDL_Surface* _src )
-{
+  int height = pixheight(m__screen), width = pixwidth(m__screen);
+  Uint16 pitch = width*4;
+  std::swap( pixels, m_scratch->pixels );
+  std::swap( width, m_scratch->w );
+  std::swap( height, m_scratch->h );
+  std::swap( pitch, m_scratch->pitch );
+  
   SDL_Rect offset;
   Point<int32_t>(0,0).pull( offset );
+  SDL_BlitSurface( m_scratch, NULL, m_screen, &offset );
   
-  SDL_BlitSurface( _src, NULL, m_screen, &offset );
+  std::swap( pixels, m_scratch->pixels );
+  std::swap( width, m_scratch->w );
+  std::swap( height, m_scratch->h );
+  std::swap( pitch, m_scratch->pitch );
 }
+
+// void
+// Action::blit( Point<int32_t> const& _pos, SDL_Surface* _src )
+// {
+//   SDL_Rect offset;
+//   (_pos - (Point<int32_t>(_src->w, _src->h)/2)).pull( offset );
+  
+//   SDL_BlitSurface( _src, NULL, m_screen, &offset );
+// }
+
+// void
+// Action::blit( SDL_Surface* _src )
+// {
+//   SDL_Rect offset;
+//   Point<int32_t>(0,0).pull( offset );
+  
+//   SDL_BlitSurface( _src, NULL, m_screen, &offset );
+// }
 
 void
 Action::endstats( std::ostream& _sink )
@@ -302,4 +308,25 @@ Action::cutmotion( Point<float> const& w1, Point<float> const& w2 )
     m_pos = (x*2 + m1)/3;
   else
     m_pos = m1;
+}
+
+void
+Action::cornerblit( Point<int32_t> const& _pos, Pixel* data, uintptr_t width, uintptr_t height )
+{
+  int32_t const ybeg = std::max( 0, -_pos.m_y );
+  int32_t const yend = std::min( int32_t( height ), int32_t( pixheight(m__screen) )-_pos.m_y );
+  int32_t const xbeg = std::max( 0, -_pos.m_x );
+  int32_t const xend = std::min( int32_t( width ), int32_t( pixwidth(m__screen) )-_pos.m_x );
+  
+  for (int32_t y = ybeg; y < yend; ++y) {
+    for (int32_t x = xbeg; x < xend; ++x) {
+      Pixel& src = data[y*width+x];
+      Pixel& dst = m__screen[y+_pos.m_y][x+_pos.m_x];
+      unsigned int alpha = src.a + 1;
+      unsigned int omega = 256 - src.a;
+      dst.b = (omega*dst.b + alpha*src.b) >> 8;
+      dst.g = (omega*dst.g + alpha*src.g) >> 8;
+      dst.r = (omega*dst.r + alpha*src.r) >> 8;
+    }
+  }
 }

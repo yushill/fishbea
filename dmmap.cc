@@ -16,14 +16,14 @@ struct DMRoomBuf : public virtual RoomBuf
     int32_t active_door = -1;
     
     // Scene Draw
-    _action.blit( gallery::classic_bg );
+    _action.cornerblit( Point<int32_t>(), gallery::classic_bg );
     for (int32_t door_idx = 0; door_idx < 4; ++door_idx )
       {
         Point<int32_t> pos = door_position( door_idx );
         if ((pos.rebind<float>() - _action.pos()).sqnorm() > 24*24) {
-          _action.blit( pos, gallery::shell );
+          _action.centerblit( pos, gallery::shell );
         } else {
-          _action.blit( pos, gallery::shiny_shell );
+          _action.centerblit( pos, gallery::shiny_shell );
           active_door = door_idx;
         }
       }

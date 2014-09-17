@@ -52,7 +52,7 @@ struct ExpRoomBuf : public virtual RoomBuf
   process( Action& _action ) const
   {
     if ((m_index & -2) == 0) {
-      _action.blit( gallery::classic_bg );
+      _action.cornerblit( Point<int32_t>(), gallery::classic_bg );
       hydro::effect( thm.table[m_index], _action );
       _action.normalmotion();
       _action.moremotion( hydro::motion( thm.table[m_index], _action ) );

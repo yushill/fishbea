@@ -43,19 +43,19 @@ namespace
     process( Action& _action ) const
     {
       // Scene Draw
-      _action.blit( gallery::classic_bg );
+      _action.cornerblit( Point<int32_t>(), gallery::classic_bg );
 
       bool over_end, over_start;
   
       {
         Point<int32_t> pos( VideoConfig::diag()/2 );
         over_end = (pos.rebind<float>() - _action.pos()).sqnorm() <= 24*24;
-        _action.blit( pos, over_end ? gallery::shiny_shell : gallery::shell );
+        _action.centerblit( pos, over_end ? gallery::shiny_shell : gallery::shell );
       }
       {
         Point<int32_t> pos( 50, 50 );
         over_start = (pos.rebind<float>() - _action.pos()).sqnorm() <= 24*24;
-        _action.blit( pos, over_start ? gallery::shiny_shell : gallery::shell );
+        _action.centerblit( pos, over_start ? gallery::shiny_shell : gallery::shell );
       }
   
       if (_action.fires()) {
@@ -106,19 +106,23 @@ namespace {
       static int32_t const radius = 2;
       Point<int32_t> beg( x, y1 ), end( x, y2 );
       _action.cutmotion( beg.rebind<float>(), end.rebind<float>() );
-      SDL_Rect wall;
       beg -= Point<int32_t>(radius,radius);
       end += Point<int32_t>(radius,radius);
-      beg.pull( wall.x, wall.y );
-      (end-beg).pull( wall.w, wall.h );
-      SDL_FillRect( _action.screen(), &wall, SDL_MapRGB(_action.screen()->format, 0, 0, 0) );
+      int32_t ybeg, yend, xbeg, xend;
+      beg.pull( xbeg, xend );
+      end.pull( ybeg, yend );
+      for (int32_t x = xbeg; x < xend; ++x) {
+        for (int32_t y = ybeg; y < yend; ++y) {
+          _action.m__screen[y][x].set( 0, 0, 0, 0xff );
+        }
+      }
     }
     
     void
     process( Action& _action ) const
     {
       // Scene Draw
-      _action.blit( gallery::classic_bg );
+      _action.cornerblit( Point<int32_t>(), gallery::classic_bg );
     
       // Hydro field
       hydro::effect( SlalomHF.table, _action );
