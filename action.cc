@@ -168,25 +168,19 @@ Action::flipandwait()
 void
 Action::jump()
 {
-  // int oldh = m_screen->h;
-  // m_screen->h = 384;
   std::cerr << "Jumping from room: " << m_room->getname() << ".\n";
   m_story.active->compress();
     
-  //SDL_Surface* thumb = SDL_DisplayFormatAlpha( m_screen );
   Thumb* thumb = new Thumb( m__screen );
   this->flipandwait();
   {
     // Animate thumb apparition
     screen_t begin; pixcpy( begin, m__screen );
-    screen_t slide; pixcpy( slide, m__screen );
     image_apply( Grayify(), thumb->screen );
-    // m_screen->h = oldh;
     
     for (int idx = 0; idx < 16; ++idx)
       {
-        image_fade( slide, begin, thumb->screen, idx*16 );
-        this->cornerblit( Point<int32_t>(0,0), slide );
+        image_fade( m__screen, thumb->screen, begin, idx*16 );
         this->flipandwait();
       }
   }

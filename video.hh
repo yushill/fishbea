@@ -79,17 +79,18 @@ image_pngload( Pixel (&dst)[HEIGHT][WIDTH], char const* _filepath )
 
 template <uintptr_t WIDTH, uintptr_t HEIGHT>
 void
-image_fade( Pixel (&dst)[HEIGHT][WIDTH], Pixel (&src1)[HEIGHT][WIDTH], Pixel (&src2)[HEIGHT][WIDTH], uint8_t select )
+image_fade( Pixel (&dst)[HEIGHT][WIDTH], Pixel const (&src1)[HEIGHT][WIDTH], Pixel const (&src2)[HEIGHT][WIDTH], uint8_t select )
 {
-  unsigned int c2 = select + 1, c1 = 256 - select;
+  unsigned int sel1 = select + 1, sel2 = 256 - select;
   
   for (uintptr_t idx = 0; idx < HEIGHT*WIDTH; ++idx) {
     Pixel& pdst = (&dst[0][0])[idx];
-    Pixel& psrc1 = (&dst[0][0])[idx];
-    Pixel& psrc2 = (&dst[0][0])[idx];
-    pdst.b = psrc1.b*c1 + psrc2.b*c2;
-    pdst.g = psrc1.g*c1 + psrc2.g*c2;
-    pdst.r = psrc1.r*c1 + psrc2.r*c2;
+    Pixel const& psrc1 = (&src1[0][0])[idx];
+    Pixel const& psrc2 = (&src2[0][0])[idx];
+    pdst.b = (psrc1.b*sel1 + psrc2.b*sel2) >> 8;
+    pdst.g = (psrc1.g*sel1 + psrc2.g*sel2) >> 8;
+    pdst.r = (psrc1.r*sel1 + psrc2.r*sel2) >> 8;
+    pdst.a = 0xff;
   }
 }
 
