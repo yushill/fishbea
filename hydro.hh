@@ -3,11 +3,8 @@
 
 #include <video.hh>
 #include <timeline.hh>
-#include <SDL/SDL.h>
 #include <cmath>
 #include <inttypes.h>
-
-struct SDL_Surface;
 
 namespace hydro
 {

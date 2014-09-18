@@ -2,7 +2,6 @@
 #include <action.hh>
 #include <video.hh>
 #include <hydro.hh>
-#include <SDL/SDL.h>
 #include <iostream>
 #include <sstream>
 #include <gallery.hh>

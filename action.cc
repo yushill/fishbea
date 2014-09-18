@@ -180,24 +180,6 @@ Action::jump()
   cmds.reset();
 }
 
-// void
-// Action::blit( Point<int32_t> const& _pos, SDL_Surface* _src )
-// {
-//   SDL_Rect offset;
-//   (_pos - (Point<int32_t>(_src->w, _src->h)/2)).pull( offset );
-  
-//   SDL_BlitSurface( _src, NULL, m_screen, &offset );
-// }
-
-// void
-// Action::blit( SDL_Surface* _src )
-// {
-//   SDL_Rect offset;
-//   Point<int32_t>(0,0).pull( offset );
-  
-//   SDL_BlitSurface( _src, NULL, m_screen, &offset );
-// }
-
 void
 Action::endstats( std::ostream& _sink )
 {

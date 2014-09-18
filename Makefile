@@ -14,7 +14,7 @@ BUILD=build
 
 EXE=$(BUILD)/exe
 
-.PHONY: all clean
+.PHONY: all
 all: $(EXE)
 
 $(OBJS):$(BUILD)/%.o:%.cc
@@ -29,6 +29,10 @@ $(EXE): $(OBJS)
 	@mkdir -p `dirname $@`
 	$(CXX) $(LDFLAGS) $(OBJS) $(LIBS) -o $@
 
+.PHONY: expand
+expand: $(PPIS)
+
+.PHONY: clean
 clean:
 	rm -Rf $(BUILD)
 

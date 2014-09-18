@@ -1,6 +1,5 @@
 #include <gallery.hh>
 #include <video.hh>
-#include <SDL/SDL_video.h>
 #include <iostream>
 
 Pixel gallery::hero[36][48];
