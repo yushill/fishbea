@@ -30,14 +30,13 @@ struct Ghost
   {
     if (_room != room) return false;
     switch (when) {
-    case -1:  action.centerblit( _pos,  gallery::red_ghost ); break;
+    case -1:  action.centerblit( _pos, gallery::red_ghost ); break;
     case  0:  action.centerblit( _pos, gallery::gray_ghost ); break;
     case +1:  action.centerblit( _pos, gallery::blue_ghost ); break;
     };
     return false;
   }
 };
-
 
 void Action::run()
 {
@@ -84,6 +83,33 @@ void Action::run()
 }
 
 void
+Action::endstats( std::ostream& _sink )
+{
+  _sink << "Active records: " << m_story.record_count << ".\n";
+}
+
+void
+Action::cornerblit( Point<int32_t> const& _pos, Pixel* data, uintptr_t width, uintptr_t height )
+{
+  int32_t const ybeg = std::max( 0, -_pos.y );
+  int32_t const yend = std::min( int32_t( height ), int32_t( pixheight(thescreen.pixels) )-_pos.y );
+  int32_t const xbeg = std::max( 0, -_pos.x );
+  int32_t const xend = std::min( int32_t( width ), int32_t( pixwidth(thescreen.pixels) )-_pos.x );
+  
+  for (int32_t y = ybeg; y < yend; ++y) {
+    for (int32_t x = xbeg; x < xend; ++x) {
+      Pixel& src = data[y*width+x];
+      Pixel& dst = thescreen.pixels[y+_pos.y][x+_pos.x];
+      unsigned int alpha = src.a + 1;
+      unsigned int omega = 256 - src.a;
+      dst.b = (omega*dst.b + alpha*src.b) >> 8;
+      dst.g = (omega*dst.g + alpha*src.g) >> 8;
+      dst.r = (omega*dst.r + alpha*src.r) >> 8;
+    }
+  }
+}
+
+void
 Action::draw_timebar( Action::timebar_style tbs )
 {
   if ((m_story.eoa > m_story.eot) or (m_story.boa < m_story.bot)) return;
@@ -112,6 +138,38 @@ Action::draw_timebar( Action::timebar_style tbs )
       thescreen.pixels[y][x].set( 0xff, 0xff, 0xff, 0xff );
     }
   }
+}
+
+void 
+Action::moveto( Gate const& gate )
+{
+  if (m_room != gate.room)
+    std::cerr << "Entering room: " << gate.room->getname() << ".\n";
+  m_room = gate.room;
+  m_pos = Point<float>( gate.pos.x, gate.pos.y );
+}
+
+void
+Action::cutmotion( Point<float> const& w1, Point<float> const& w2 )
+{
+  // computing intersection
+  Point<float> const& m1( m_origin );
+  Point<float> const& m2( m_pos );
+  Point<float> wd = w2 - w1;
+  Point<float> md = m2 - m1;
+  float det = wd*!md;
+  if (fabs(det) < 1e-6) return;
+  Point<float>  x = md*(w2*!w1)/det - wd*(m2*!m1)/det;
+  
+  // Checking if intersection lies in between m1..m2 and w1..w2 
+  if ((m2-x)*(m1-x) > 0) return;
+  if ((w2-x)*(w1-x) > 0) return;
+  
+  // prevent collision
+  if ((m1-x).sqnorm() > 8)
+    m_pos = (x*2 + m1)/3;
+  else
+    m_pos = m1;
 }
 
 void
@@ -184,61 +242,3 @@ Action::jump()
   cmds.reset();
 }
 
-void 
-Action::moveto( Gate const& gate )
-{
-  if (m_room != gate.room)
-    std::cerr << "Entering room: " << gate.room->getname() << ".\n";
-  m_room = gate.room;
-  m_pos = Point<float>( gate.pos.x, gate.pos.y );
-}
-
-void
-Action::endstats( std::ostream& _sink )
-{
-  _sink << "Active records: " << m_story.record_count << ".\n";
-}
-
-void
-Action::cutmotion( Point<float> const& w1, Point<float> const& w2 )
-{
-  // computing intersection
-  Point<float> const& m1( m_origin );
-  Point<float> const& m2( m_pos );
-  Point<float> wd = w2 - w1;
-  Point<float> md = m2 - m1;
-  float det = wd*!md;
-  if (fabs(det) < 1e-6) return;
-  Point<float>  x = md*(w2*!w1)/det - wd*(m2*!m1)/det;
-  
-  // Checking if intersection lies in between m1..m2 and w1..w2 
-  if ((m2-x)*(m1-x) > 0) return;
-  if ((w2-x)*(w1-x) > 0) return;
-  
-  // prevent collision
-  if ((m1-x).sqnorm() > 8)
-    m_pos = (x*2 + m1)/3;
-  else
-    m_pos = m1;
-}
-
-void
-Action::cornerblit( Point<int32_t> const& _pos, Pixel* data, uintptr_t width, uintptr_t height )
-{
-  int32_t const ybeg = std::max( 0, -_pos.y );
-  int32_t const yend = std::min( int32_t( height ), int32_t( pixheight(thescreen.pixels) )-_pos.y );
-  int32_t const xbeg = std::max( 0, -_pos.x );
-  int32_t const xend = std::min( int32_t( width ), int32_t( pixwidth(thescreen.pixels) )-_pos.x );
-  
-  for (int32_t y = ybeg; y < yend; ++y) {
-    for (int32_t x = xbeg; x < xend; ++x) {
-      Pixel& src = data[y*width+x];
-      Pixel& dst = thescreen.pixels[y+_pos.y][x+_pos.x];
-      unsigned int alpha = src.a + 1;
-      unsigned int omega = 256 - src.a;
-      dst.b = (omega*dst.b + alpha*src.b) >> 8;
-      dst.g = (omega*dst.g + alpha*src.g) >> 8;
-      dst.r = (omega*dst.r + alpha*src.r) >> 8;
-    }
-  }
-}
