@@ -11,7 +11,7 @@ main( int argc, char** argv )
 {
   Action action;
   
-  action.moveto( DiaMesh::start_incoming() );
+  action.moveto( SimplePebble::start_incoming() );
   
   std::cerr << "Rolling!!!\n";
   

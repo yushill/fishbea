@@ -186,8 +186,70 @@ namespace {
       void append() { count -= 1; }
     };
   };
+  
+  struct SimplePebbleRoomBuf : public virtual RoomBuf
+  {
+    int cmp( RoomBuf const& _rb ) const { return 0; }
+    std::string getname() const { std::ostringstream oss; oss << "SimplePebbleRoom"; return oss.str(); }
+    
+    static int const side = 5;
+    static int32_t const blocsize = 64;
+    
+    void
+    process( Action& _action ) const
+    {
+      _action.cornerblit( Point<int32_t>(), gallery::classic_bg );
+      bool victory = pebbleprocess( *this, _action );
+      if (victory) _action.moveto( SimplePebble::end_upcoming() );
+    }
+    
+    struct PebbleBoard
+    {
+      PebbleBoard(SimplePebbleRoomBuf const&) : count(2) { for (int idx = 0; idx < 10; ++idx) cells[idx] = false; }
+      bool cells[10];
+      intptr_t count;
+      int cellidx( int32_t x, int32_t y )
+      {
+        int const map [side*side] = {
+          0,1,1,1,1,
+          3,4,5,5,1,
+          2,7,8,5,1,
+          1,6,5,5,1,
+          1,1,1,1,1,
+        };
+        if ((uint32_t( y ) >= side) or (uint32_t( x ) >= side)) return 9;
+        return map[y*side+x];
+      }
+      void activate( Point<int32_t> const& p ) { cells[cellidx(p.x,p.y)] = true; }
+      bool active( Point<int32_t> const& p ) { return cells[cellidx(p.x,p.y)]; }
+      PebbleWall hwall( int32_t x, int32_t y ) { return wall( cellidx( x, y-1 ), cellidx( x, y ) ); }
+      PebbleWall vwall( int32_t x, int32_t y ) { return wall( cellidx( x-1, y ), cellidx( x, y ) ); }
+      PebbleWall rwall( int src, int dst ) { PebbleWall rev = wall( dst, src ); return rev == FWD ? BWD : rev; } 
+      PebbleWall wall( int src, int dst )
+      {
+        if (src == dst) return NONE;
+        if (count < 0) return PLAIN;
+        switch (dst) {
+        case 0: switch (src) { case 9: return NONE; case 1: case 3: return rwall( src, dst ); } break;
+        case 1: switch (src) { case 0: return (cells[0] ? NONE : FWD); case 2: return rwall( src, dst ); } break;
+        case 2: switch (src) { case 1: return (cells[1] ? NONE : FWD); case 3: return rwall( src, dst ); } break;
+        case 3: switch (src) { case 0: case 2: return ((cells[0] and cells[2]) ? NONE : FWD); case 4: return rwall( src, dst ); } break;
+        case 4: switch (src) { case 3: return (cells[3] ? NONE : FWD); case 5: case 7: return rwall( src, dst ); } break;
+        case 5: switch (src) { case 4: return (cells[4] ? NONE : FWD); case 6: return rwall( src, dst ); } break;
+        case 6: switch (src) { case 5: return (cells[5] ? NONE : FWD); case 7: return rwall( src, dst ); } break;
+        case 7: switch (src) { case 4: case 6: return ((cells[4] and cells[6]) ? NONE : FWD); case 8: return rwall( src, dst ); } break;
+        case 8: switch (src) { case 7: return (cells[7] ? NONE : FWD); } break;
+        case 9: switch (src) { case 0: return NONE; } break;
+        }
+        return PLAIN;
+      }
+      void append() { count -= 1; }
+    };
+  };
 }
 
 Gate DiaMesh::start_incoming() { return Gate( new DiaMeshRoomBuf, Point<int32_t>(50, 190) ); }
 // Gate DiaMesh::end_incoming() { return Gate( new DiaMeshRoomBuf, Point<int32_t>(480, 192) ); }
 
+Gate SimplePebble::start_incoming() { return Gate( new SimplePebbleRoomBuf, Point<int32_t>(50, 190) ); }
+Gate SimplePebble::end_upcoming() { return DiaMesh::start_incoming(); }
