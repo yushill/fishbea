@@ -1,6 +1,6 @@
 #include <gallery.hh>
 #include <video.hh>
-#include <iostream>
+#include <action.hh>
 
 Pixel gallery::hero[36][48];
 Pixel gallery::gray_ghost[36][48];
@@ -12,26 +12,28 @@ Pixel gallery::starfish[32][48];
 Pixel gallery::shiny_starfish[32][48];
 Screen::pixels_t gallery::classic_bg;
 
-Action::Store gallery::__is__( gallery::__init__, gallery::__exit__ );
-
-void gallery::__init__()
-{
-  image_pngload( hero, "data/Nemo.png" );
+namespace {
+  struct Store : public Action::Store
+  {
+    void init()
+    {
+      image_pngload( gallery::hero, "data/Nemo.png" );
   
-  image_apply( Ghostify(), gray_ghost, hero );
-  image_apply( Blueify(), blue_ghost, hero );
-  image_apply( Redify(), red_ghost, hero );
+      image_apply( Ghostify(), gallery::gray_ghost, gallery::hero );
+      image_apply( Blueify(), gallery::blue_ghost, gallery::hero );
+      image_apply( Redify(), gallery::red_ghost, gallery::hero );
   
-  image_pngload( shell, "data/door.png" );
+      image_pngload( gallery::shell, "data/door.png" );
   
-  image_apply( Hilite(), shiny_shell, shell );
+      image_apply( Hilite(), gallery::shiny_shell, gallery::shell );
   
-  image_pngload( starfish, "data/starfish.png" );
+      image_pngload( gallery::starfish, "data/starfish.png" );
   
-  image_apply( Hilite(), shiny_starfish, starfish );
+      image_apply( Hilite(), gallery::shiny_starfish, gallery::starfish );
   
-  image_pngload( classic_bg, "data/background.png" );
+      image_pngload( gallery::classic_bg, "data/background.png" );
+    }
+    
+    void exit() {}
+  } __as__;
 }
-
-void gallery::__exit__()
-{}

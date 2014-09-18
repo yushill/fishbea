@@ -11,12 +11,12 @@ Action::Action()
 {
   image_apply( Fill<0,0,0,0xff>(), thescreen.pixels );
   GamerInterface::init();
-  Store::pool->init();
+  Store::pool->lstinit();
 }
 
 Action::~Action()
 {
-  Store::pool->exit();
+  Store::pool->lstexit();
   GamerInterface::exit();
 }
 
