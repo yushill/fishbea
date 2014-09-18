@@ -29,13 +29,12 @@ struct DMRoomBuf : public virtual RoomBuf
       }
     
     // GameWorld interaction
-    if ((active_door >= 0) and _action.fires())
+    if ((active_door >= 0) and _action.cmds[Action::Fire])
       {
         if ((m_index == (TheSide*TheSide-1)) and (active_door == 3)) _action.moveto( DMMap::end_upcoming() );
         else if ((m_index == 0) and (active_door == 0))              _action.moveto( DMMap::start_upcoming() );
         else                                                         _action.moveto( door_upcoming( active_door ) );
-        std::cerr << "Entering room: " << _action.m_room->getname() << ".\n";
-        _action.fired();
+        _action.cmds.reset();
       }
     
     else

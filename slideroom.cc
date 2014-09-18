@@ -57,10 +57,10 @@ namespace
         _action.centerblit( pos, over_start ? gallery::shiny_shell : gallery::shell );
       }
   
-      if (_action.fires()) {
+      if (_action.cmds[Action::Fire]) {
         if (over_end) { _action.moveto( Spiral::end_upcoming() ); }
         if (over_start) { _action.moveto( Spiral::start_upcoming() ); }
-        if (over_end or over_start) { _action.fired(); return; }
+        if (over_end or over_start) { _action.cmds.reset(); return; }
       }
   
       hydro::effect( SpiralHF.table, _action );

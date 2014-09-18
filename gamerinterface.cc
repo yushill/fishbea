@@ -37,7 +37,7 @@ namespace GamerInterface
   void exit() { sdl.exit(); }
   
   Point<float>
-  motion( Action& action )
+  motion( Action const& action )
   {
     int hor = int(action.cmds[Action::Right])-int(action.cmds[Action::Left]);
     int ver = int(action.cmds[Action::Down])-int(action.cmds[Action::Up]);

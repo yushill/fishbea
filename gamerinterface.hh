@@ -10,7 +10,7 @@ namespace GamerInterface
   void            init();
   void            exit();
   void            collect( Action& action );
-  Point<float>    motion( Action& action );
+  Point<float>    motion( Action const& action );
   int             flipandwait( Screen& _screen, int next_ticks );
 };
 

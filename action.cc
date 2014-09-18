@@ -7,7 +7,7 @@
 Action::Store* Action::Store::pool = 0;
 
 Action::Action()
-  : m_lastflip( 0 ), m_pos(), m_story(), m_room()
+  : m_lastflip( 0 ), m_story(), m_room(), m_pos()
 {
   image_apply( Fill<0,0,0,0xff>(), thescreen.pixels );
   GamerInterface::init();
@@ -43,7 +43,7 @@ void Action::run()
 {
   for (;;) {
     GamerInterface::collect( *this );
-    m_story.append( m_room, m_pos, fires() );
+    m_story.append( m_room, m_pos, cmds[Fire] );
     
     if (cmds[DelBwd]) {
       std::cout << "position: {" << m_pos.x << ',' << m_pos.y << "}\n";
@@ -182,6 +182,15 @@ Action::jump()
     }
   m_story.active->update_usetime();
   cmds.reset();
+}
+
+void 
+Action::moveto( Gate const& gate )
+{
+  if (m_room != gate.room)
+    std::cerr << "Entering room: " << gate.room->getname() << ".\n";
+  m_room = gate.room;
+  m_pos = Point<float>( gate.pos.x, gate.pos.y );
 }
 
 void

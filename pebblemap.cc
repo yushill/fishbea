@@ -59,8 +59,8 @@ namespace {
     // Collision items precomputed from scene rendering
     Pebbling<RoomBufT> pebbling( roombuf );
     {
-      TimeLine *tl = _action.m_story.active, *eotl = _action.m_story.active;
-      do { tl->find( _action.m_story.now(), pebbling ); } while ((tl = tl->fwd()) != eotl);
+      TimeLine *tl = _action.story().active, *eotl = _action.story().active;
+      do { tl->find( _action.story().now(), pebbling ); } while ((tl = tl->fwd()) != eotl);
     }
     
     {
@@ -128,10 +128,10 @@ namespace {
       }
     }
     
-    if (_action.fires()) {
+    if (_action.cmds[Action::Fire]) {
       Point<int32_t> pos;
       if (pebbling.gridpos( _action.pos().rebind<int32_t>(), pos )) {
-        _action.fired();
+        _action.cmds.reset();
         if ((pos.x == (roombuf.side-1)) and (pos.y == (roombuf.side-1))) return true;
         _action.moveto( DiaMesh::start_incoming() );
       }

@@ -51,8 +51,8 @@ namespace {
       // Collision items precomputed from scene rendering
       Code code( this );
       {
-        TimeLine *tl = _action.m_story.active, *eotl = _action.m_story.active;
-        do { tl->match( _action.m_story.now(), code ); } while ((tl = tl->fwd()) != eotl);
+        TimeLine *tl = _action.story().active, *eotl = _action.story().active;
+        do { tl->match( _action.story().now(), code ); } while ((tl = tl->fwd()) != eotl);
       }
 
       // Scene Draw
@@ -67,11 +67,10 @@ namespace {
     
       if (code.value == TheCode) {
         // draw exit
-        if (_action.fires() and fishexit)
+        if (_action.cmds[Action::Fire] and fishexit)
           {
             _action.moveto( EPMap::end_upcoming() );
-            std::cerr << "Entering room: " << _action.m_room->getname() << ".\n";
-            _action.fired();
+            _action.cmds.reset();
             return;
           }
       } else {
