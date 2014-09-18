@@ -2,7 +2,6 @@
 #define __IMAGE_HH__
 
 #include <geometry.hh>
-#include <string>
 #include <inttypes.h>
 
 struct Pixel

@@ -8,7 +8,18 @@
 
 namespace hydro
 {
-
+  struct Delay
+  {
+    int32_t value;
+    void set( double _value )
+    {
+      if (isnan( _value )) { value = 0x80000000; return; }
+      double rem = fmod( _value, 8. );
+      if (rem < 0) rem += 8.;
+      value = int32_t( rem*double(1<<28) );
+    }
+  };
+  
   template <typename mapT>
   bool grad( mapT const& _table, Point<int32_t> const& pos, Point<float>& _grad )
   {
@@ -21,7 +32,6 @@ namespace hydro
     _grad.y = double( (vy1-vy0) << 1 ) / 2 / double( 1<<29 );
     return true;
   }
-
 
   template <typename mapT, typename actionT>
   void effect( mapT const& _table, actionT& _action )
@@ -59,18 +69,6 @@ namespace hydro
     if (module < 1e-6) return Point<float>();
     return ((g / module) / (0.025 + module)).rebind<float>();
   }
-  
-  struct Delay
-  {
-    int32_t value;
-    void set( double _value )
-    {
-      if (isnan( _value )) { value = 0x80000000; return; }
-      double rem = fmod( _value, 8. );
-      if (rem < 0) rem += 8.;
-      value = int32_t( rem*double(1<<28) );
-    }
-  };
 };
 
 #endif /* __HYDRO_HH__ */

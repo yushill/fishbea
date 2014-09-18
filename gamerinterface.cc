@@ -36,15 +36,6 @@ namespace GamerInterface
   void init() { sdl.init(); }
   void exit() { sdl.exit(); }
   
-  Point<float>
-  motion( Action const& action )
-  {
-    int hor = int(action.cmds[Action::Right])-int(action.cmds[Action::Left]);
-    int ver = int(action.cmds[Action::Down])-int(action.cmds[Action::Up]);
-    float scale = (hor & ver) ? M_SQRT1_2 : 1.0;
-    return Point<float>( hor*scale, ver*scale );
-  }
-
   void
   collect( Action& action )
   {
@@ -70,6 +61,15 @@ namespace GamerInterface
             }
           }
       }
+  }
+
+  Point<float>
+  motion( Action const& action )
+  {
+    int hor = int(action.cmds[Action::Right])-int(action.cmds[Action::Left]);
+    int ver = int(action.cmds[Action::Down])-int(action.cmds[Action::Up]);
+    float scale = (hor & ver) ? M_SQRT1_2 : 1.0;
+    return Point<float>( hor*scale, ver*scale );
   }
 
   int

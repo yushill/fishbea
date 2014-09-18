@@ -57,5 +57,7 @@ void image_pngload( Pixel* _dst, uintptr_t _width, uintptr_t _height, char const
   /* Read the image data from the PNG file */
   png_read_image( png_ptr, row_pointers );
   png_read_end( png_ptr, info_ptr );
+  
+  /* PNG is RGBA wheras we prefer BGRA */
   for (uintptr_t idx = 0; idx < _width*_height; ++idx) std::swap(_dst[idx].b, _dst[idx].r);
 }
