@@ -5,23 +5,14 @@
 #include <string>
 #include <inttypes.h>
 
-struct SDL_Surface;
-
 struct VideoConfig
 {
-  static const int32_t width = 640;
-  static const int32_t height = 384;
-  static Point<int32_t> diag() { return Point<int32_t>( width, height ); }
-  
   VideoConfig();
   ~VideoConfig();
-  SDL_Surface* screen;
 };
 
-extern SDL_Surface* load_image( std::string filename );
-
 struct ImageStore {
-  typedef void (*init_method_t)( SDL_Surface* _screen );
+  typedef void (*init_method_t)();
   typedef void (*exit_method_t)();
   init_method_t init_method;
   exit_method_t exit_method;
@@ -29,7 +20,7 @@ struct ImageStore {
   static ImageStore* pool;
   ImageStore( init_method_t _init, exit_method_t _exit )
     : init_method( _init ), exit_method( _exit ), next( pool ) { pool = this; }
-  void init( SDL_Surface* _screen ) { if (next) next->init( _screen ); init_method( _screen ); }
+  void init() { if (next) next->init(); init_method(); }
   void exit() { exit_method(); if (next) next->exit(); }
 };
 
@@ -52,6 +43,13 @@ typedef Pixel screen_t[384][640];
 template <uintptr_t WIDTH, uintptr_t HEIGHT> uintptr_t pixwidth( Pixel (&dst)[HEIGHT][WIDTH] ) { return WIDTH; }
 template <uintptr_t WIDTH, uintptr_t HEIGHT> uintptr_t pixheight( Pixel (&dst)[HEIGHT][WIDTH] ) { return HEIGHT; }
 
+struct ScreenCfg
+{
+  static int32_t        width() { screen_t model; return pixwidth( model ); }
+  static int32_t        height() { screen_t model; return pixheight( model ); }
+  static Point<int32_t> diag() { screen_t model; return Point<int32_t>( pixwidth( model ), pixheight( model ) ); }
+};
+
 template <typename kerT, uintptr_t WIDTH, uintptr_t HEIGHT>
 void
 image_apply( kerT const& ker, Pixel (&dst)[HEIGHT][WIDTH] )
@@ -69,7 +67,6 @@ image_apply( kerT const& ker, Pixel (&dst)[HEIGHT][WIDTH], Pixel (&src)[HEIGHT][
 }
 
 extern void image_pngload( Pixel* _dst, uintptr_t _width, uintptr_t _height, char const* _filepath );
-
 template <uintptr_t WIDTH, uintptr_t HEIGHT>
 void
 image_pngload( Pixel (&dst)[HEIGHT][WIDTH], char const* _filepath )
@@ -93,16 +90,6 @@ image_fade( Pixel (&dst)[HEIGHT][WIDTH], Pixel const (&src1)[HEIGHT][WIDTH], Pix
     pdst.a = 0xff;
   }
 }
-
-struct Thumb
-{
-  screen_t screen;
-  Thumb( screen_t _screen )
-  {
-    for (uintptr_t idx = 0; idx < pixwidth(screen)*pixheight(screen); ++idx)
-      (&screen[0][0])[idx] = (&_screen[0][0])[idx];
-  }
-};
 
 struct Hilite { void operator() ( Pixel& pix ) const {
   pix.b = (pix.b >> 1) + 0x7f;
@@ -144,27 +131,18 @@ struct Redify { void operator() ( Pixel& pix ) const {
 template <uint8_t B, uint8_t G, uint8_t R, uint8_t A>
 struct Fill { void operator() ( Pixel& pix ) const { pix.b = B; pix.g = G; pix.r = R; pix.a = A; }};
 
-// struct Fade
-// {
-//   uintptr_t const boffset, eoffset;
-//   typedef unsigned int ui;
-//   ui const x;
-//   static ui const prec = 0x10000;
+struct Screen {
+  static const int32_t width = 640;
+  static const int32_t height = 384;
+  static Point<int32_t> diag() { return Point<int32_t>( width, height ); }
+  Pixel pixels[height][width];
+  Screen() {}
+  Screen( Screen const& _screen )
+  {
+    for (uintptr_t idx = 0; idx < pixwidth(pixels)*pixheight(pixels); ++idx)
+      (&pixels[0][0])[idx] = (&_screen.pixels[0][0])[idx];
+  }
+};
   
-//   typedef uint8_t* ptr;
-//   template <typename imgT>
-//   Fade( imgT* dst, imgT* beg, imgT* end, double _x )
-//     : boffset( ptr(beg->pixels) - ptr(dst->pixels) ),
-//       eoffset( ptr(end->pixels) - ptr(dst->pixels) ),
-//       x( _x*prec )
-//   {}
-//   void operator() ( uint8_t* pxs ) const
-//   {
-//     pxs[0] = (pxs[eoffset+0]*x+pxs[boffset+0]*(prec-x))/prec;
-//     pxs[1] = (pxs[eoffset+1]*x+pxs[boffset+1]*(prec-x))/prec;
-//     pxs[2] = (pxs[eoffset+2]*x+pxs[boffset+2]*(prec-x))/prec;
-//   }
-// };
-
 
 #endif /* __IMAGE_HH__ */

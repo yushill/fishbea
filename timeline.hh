@@ -10,7 +10,7 @@
 
 typedef uint64_t date_t;
 
-struct Thumb;
+struct Screen;
 
 struct Character
 {
@@ -56,7 +56,7 @@ struct TimeLine
   
   // Contruction
   TimeLine( date_t date );
-  TimeLine( date_t date, Room const& _room, Point<float> const& _position, bool _fire, Thumb* thumb );
+  TimeLine( date_t date, Room const& _room, Point<float> const& _position, bool _fire, Screen* thumb );
   ~TimeLine();
   // No copies
   TimeLine( TimeLine const& _tl ) { throw "NoNoNo"; }
@@ -70,8 +70,8 @@ struct TimeLine
   bool          single() const { return (m_fwd == this) and (m_bwd == this); }
   
   void          append( date_t date, Room const& _room, Point<float> const& _position, bool _fire );
-  void          setthumb( Thumb* newthumb );
-  Thumb*      getthumb() { return m_thumb; };
+  void          setthumb( Screen* newthumb );
+  Screen*      getthumb() { return m_thumb; };
   void          update_usetime();
   void          compress();
   void          restore_state( Point<float>& _pos, Room& _room ) const;
@@ -117,7 +117,7 @@ struct TimeLine
   uintptr_t     m_usetime; /* last use time */
   
 private:
-  Thumb*      m_thumb;
+  Screen*      m_thumb;
 };
 
 struct Story
@@ -143,7 +143,7 @@ struct Story
   
   date_t now() const { return eoa - 1; }
   TimeLine* firstghost() { return active->fwd(); }
-  void newbwd( Room const& _room, Point<float> const& _pos, Thumb* thumb )
+  void newbwd( Room const& _room, Point<float> const& _pos, Screen* thumb )
   {
     active->insbwd( new TimeLine( now(), _room, _pos, false, thumb ) );
     record_count += 1;

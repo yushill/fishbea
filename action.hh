@@ -2,6 +2,7 @@
 #define __ACTION_HH__
 
 #include <video.hh>
+#include <gamerinterface.hh>
 #include <map.hh>
 #include <timeline.hh>
 #include <bitset>
@@ -9,51 +10,21 @@
 
 #include <iostream>
 
-struct PlayerInterface
-{
-  struct Quit {};
-  enum CmdCode {
-    // Action
-    Branch = 0, Fire, Jump,
-    // Time Menu
-    Right, Left, Down, Up, DelFwd, DelBwd, Select,
-    // Mods
-    Shift, Alt,
-    Debug,
-    CmdCodeCount
-  };
-  std::bitset<CmdCodeCount> cmds;
-  
-  PlayerInterface() {}
-  
-  void            collect();
-  
-  Point<float>    motion() const;
-};
-
 struct Action
 {
-  Action( SDL_Surface* _screen );
+  Action();
   ~Action();
   
-  // Gamer interaction
+  // Game engine API
   void run();
   enum timebar_style { tbs_full = 0, tbs_point };
   void draw_timebar( timebar_style tbs );
-  void flipandwait();
+  void flipandwait() { m_lastflip = GamerInterface::flipandwait( thescreen.pixels, m_lastflip + FramePeriod ); }
   void jump();
-  bool fires() const { return m_control.cmds[PlayerInterface::Fire]; }
-  void fired() { m_control.cmds.reset(PlayerInterface::Fire); }
-  // template <uintptr_t WIDTH, uintptr_t HEIGHT>
-  // void blit( Point<int32_t> const& _pos, Pixel (&img)[HEIGHT][WIDTH] ) { blit( _pos, &img[0][0], WIDTH, HEIGHT ); }
-  // void blit( Point<int32_t> const& _pos, Pixel* data, uintptr_t width, uintptr_t height );
-  // void blit( Point<int32_t> const& _pos, SDL_Surface* _src );
-  // void blit( SDL_Surface* _src );
-  // SDL_Surface* scratch( SDL_Surface* _scratch=0 ) { return m_scratch; }
-  // SDL_Surface* screen() { return m_screen; }
-
-  void finalblit();
-  screen_t          m__screen;
+  bool fires() const { return cmds[Fire]; }
+  void fired() { cmds.reset(Fire); }
+  
+  Screen            thescreen;
   void cornerblit( Point<int32_t> const& _pos, Pixel* data, uintptr_t width, uintptr_t height );
   template <uintptr_t WIDTH, uintptr_t HEIGHT>
   void centerblit( Point<int32_t> const& _pos, Pixel (&img)[HEIGHT][WIDTH] )
@@ -61,22 +32,23 @@ struct Action
   template <uintptr_t WIDTH, uintptr_t HEIGHT>
   void cornerblit( Point<int32_t> const& _pos, Pixel (&img)[HEIGHT][WIDTH] )
   { cornerblit( _pos, &img[0][0], WIDTH, HEIGHT ); }
-  
 
+  int32_t           screen_width() { return pixwidth( thescreen.pixels ); }
+  int32_t           screen_height() { return pixheight( thescreen.pixels ); }
+  Point<int32_t>    screen_diag() { return Point<int32_t>( pixwidth( thescreen.pixels ), pixheight( thescreen.pixels ) ); }
+  
 private:  
-  SDL_Surface*      m_screen;
-  SDL_Surface*      m_scratch;
   static const int  FramePeriod = 40;
   static const int  FastMotion = 16;
   static const int  SlowMotion = 1;
-  int               m_next_ticks;
-  PlayerInterface   m_control;
+  int               m_lastflip;
   Point<float>      m_pos, m_origin;
+  
   
 public:
   // Engine
   void moveto( Gate const& gate ) { m_room = gate.room; m_pos = Point<float>( gate.pos.m_x, gate.pos.m_y ); }
-  void normalmotion() { m_pos += m_control.motion()*(m_control.cmds[PlayerInterface::Shift] ? SlowMotion : FastMotion); }
+  void normalmotion() { m_pos += GamerInterface::motion( *this )*(cmds[Shift] ? SlowMotion : FastMotion); }
   void moremotion( Point<float> const& _delta ) { m_pos += _delta; }
   void cutmotion( Point<float> const& w1, Point<float> const& w2 );
   Point<float> const& pos() const { return m_origin; }
@@ -87,6 +59,21 @@ public:
   Room              m_room;
   
   void endstats( std::ostream& _sink );
+
+  struct Quit {};
+  
+  enum CmdCode {
+    // Action
+    Branch = 0, Fire, Jump,
+    // Time Menu
+    Right, Left, Down, Up, DelFwd, DelBwd, Select,
+    // Mods
+    Shift, Alt,
+    Debug,
+    CmdCodeCount
+  };
+  typedef std::bitset<CmdCodeCount> Cmds;
+  Cmds cmds;
 };
 
 #endif /* __ACTION_HH__ */

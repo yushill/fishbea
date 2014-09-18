@@ -42,7 +42,7 @@ namespace {
     static bool gridpos( Point<int32_t> const& _initial, Point<int32_t>& _final )
     {
       Point<int32_t> tmp( _initial );
-      tmp -= ((VideoConfig::diag() - Point<int32_t>(RoomBufT::side,RoomBufT::side) * RoomBufT::blocsize) / 2);
+      tmp -= ((ScreenCfg::diag() - Point<int32_t>(RoomBufT::side,RoomBufT::side) * RoomBufT::blocsize) / 2);
       if ((tmp.m_y < 0) or (tmp.m_x < 0)) return false;
       tmp /= RoomBufT::blocsize;
       if ((tmp.m_y >= RoomBufT::side) or (tmp.m_x >= RoomBufT::side)) return false;
@@ -72,7 +72,7 @@ namespace {
       for (int32_t y = 0; y < roombuf.side; ++y) {
         for (int32_t x = 0; x < roombuf.side; ++x) {
           Point<int32_t> blocpos( 2*x+1-roombuf.side, 2*y+1-roombuf.side );
-          blocpos = (blocpos*roombuf.blocsize + VideoConfig::diag())/2;
+          blocpos = (blocpos*roombuf.blocsize + ScreenCfg::diag())/2;
           uint8_t alpha = pebbling.board.active( mkpoint(x,y) ) ? 170 : 85;
           for (int pix = 0; pix < roombuf.blocsize*roombuf.blocsize; ++pix)
             bloc[pix/roombuf.blocsize][pix%roombuf.blocsize].a = alpha;
@@ -96,7 +96,7 @@ namespace {
           PebbleWall wall = pebbling.board.hwall( x, y );
           if (wall == NONE) continue;
           Point<int32_t>
-            pt1( (Point<int32_t>( 2*x-roombuf.side, 2*y-roombuf.side )*roombuf.blocsize + VideoConfig::diag())/2 ),
+            pt1( (Point<int32_t>( 2*x-roombuf.side, 2*y-roombuf.side )*roombuf.blocsize + ScreenCfg::diag())/2 ),
             pt2( (pt1 + Point<int32_t>( roombuf.blocsize, 0 )) );
           _action.centerblit( (pt1+pt2)/2, bloc[wall] );
           _action.cutmotion( pt1.rebind<float>(), pt2.rebind<float>() );
@@ -119,7 +119,7 @@ namespace {
           PebbleWall wall = pebbling.board.vwall( x, y );
           if (wall == NONE) continue;
           Point<int32_t>
-            pt1( (Point<int32_t>( 2*x-roombuf.side, 2*y-roombuf.side )*roombuf.blocsize + VideoConfig::diag())/2 ),
+            pt1( (Point<int32_t>( 2*x-roombuf.side, 2*y-roombuf.side )*roombuf.blocsize + ScreenCfg::diag())/2 ),
             pt2( (pt1 + Point<int32_t>( 0, roombuf.blocsize )) );
           _action.centerblit( (pt1+pt2)/2, bloc[wall] );
           _action.cutmotion( pt1.rebind<float>(), pt2.rebind<float>() );

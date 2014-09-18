@@ -60,7 +60,7 @@ struct DMRoomBuf : public virtual RoomBuf
     }
     door_index = perm_table[door_index];
     // Returing door position according to shuffled index.
-    return Point<int32_t>( VideoConfig::width/2, VideoConfig::height/2 ) + ThePositions( door_index )*96;
+    return Point<int32_t>( ScreenCfg::width()/2, ScreenCfg::height()/2 ) + ThePositions( door_index )*96;
   }
 
   Gate

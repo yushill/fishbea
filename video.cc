@@ -1,82 +1,73 @@
 #include <video.hh>
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
+#include <png.h>
 #include <iostream>
+#include <fstream>
 #include <stdexcept>
+#include <cassert>
+#include <cstdio>
+#include <cstring>
+
+ImageStore* ImageStore::pool = 0;
 
 VideoConfig::VideoConfig()
-  : screen()
 {
-  // SDL environment setup
-  if (SDL_Init( SDL_INIT_EVERYTHING ) == -1)
-    throw std::runtime_error( std::string( "Can't init SDL: " ) + SDL_GetError() + '\n' );
-  
-  SDL_WM_SetCaption( "FishBea", NULL );
-  
-  screen = SDL_SetVideoMode( width, height, 32, SDL_SWSURFACE );
-  if (not screen)
-    throw std::runtime_error( std::string( "Can't set video mode: " ) + SDL_GetError() + "\n" );
-    
-  ImageStore::pool->init( screen );
+  ImageStore::pool->init();
 }
   
 VideoConfig::~VideoConfig()
 {
   ImageStore::pool->exit();
-  SDL_Quit();
 }
 
-SDL_Surface*
-load_image( std::string filename )
+namespace { template <typename T> T failtest( T _p ) { assert( _p ); return _p; } }
+
+void image_pngload( Pixel* _dst, uintptr_t _width, uintptr_t _height, char const* _filepath )
 {
-  SDL_Surface* img;
+  FILE* fp = failtest( fopen( _filepath, "rb" ) );
+  {
+    /* Checking if file exists and is a PNG file. */
+    png_byte header[8];
+    failtest( (fread( header, 1, 8, fp ) == 8) and (png_sig_cmp(header, 0, 8) == 0) );
+  }
   
-  if ((img = IMG_Load( filename.c_str() )))
-    {
-      SDL_Surface* source = img;
-      img = SDL_DisplayFormatAlpha( source );
-      SDL_FreeSurface( source );
-    }
-  
-  if (not img)
-    {
-      std::cerr << "Can't open '" << filename << "'.\n";
-      throw "Unexpected SDL error";
-    }
-  
-  return img;
-}
+  png_structp png_ptr = failtest( png_create_read_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL ) );
+  png_set_sig_bytes( png_ptr, 8 ); /* skipping 8 signatures bytes */
+  png_infop info_ptr = failtest( png_create_info_struct( png_ptr ) );
 
-void
-image_pngload( Pixel* _dst, uintptr_t _width, uintptr_t _height, char const* _filepath )
-{
-  SDL_Surface* img;
+  /* setjmp libpng exceptions */
+  failtest( not setjmp( png_jmpbuf( png_ptr ) ) );
   
-  if ((img = IMG_Load( _filepath )))
-    {
-      SDL_Surface* source = img;
-      img = SDL_DisplayFormatAlpha( source );
-      SDL_FreeSurface( source );
-    }
-  
-  if (not img)
-    {
-      std::cerr << "Can't open '" << _filepath << "'.\n";
-      throw "Unexpected SDL error";
-    }
-  
-  if ((uintptr_t(img->w) != _width) or (uintptr_t(img->h) != _height))
-    {
-      std::cerr << "Image dimensions mismatch (" << img->w << ", " << img->h
-                << ") for '" << _filepath << "': currently not supported.\n";
-      throw "Unexpected SDL error";
-    }
-  
-  Pixel* src = (Pixel*)(img->pixels);
-  for (uintptr_t idx = 0; idx < _width*_height; ++idx)
-    _dst[idx] = src[idx];
-  
-  SDL_FreeSurface( img );
-}
 
-ImageStore* ImageStore::pool = 0;
+  png_init_io( png_ptr, fp ); /* using fp as input */
+
+  /* pnglib will, by default, allocate memory for the image data,
+     and store the image data row by row, where each row is a 1-dimensional
+     array of bytes, and return an array of pointers to all the rows.
+
+     For our uses, we want the rows to be stored consecutively in memory,
+     forming a two-dimensional array.  pnglib does not guarantee this,
+     so we allocate the memory, and set the row pointers to point to
+     the start of each row, and give this info to pnglib through the png_ptr
+     structure.
+  */
+
+  /* Read the header of the PNG file, to get the height and width. */
+  png_read_info( png_ptr, info_ptr );
+
+  failtest( png_get_image_height( png_ptr, info_ptr ) == _height );
+  failtest( png_get_image_width( png_ptr, info_ptr ) == _width );
+  failtest( png_get_bit_depth( png_ptr, info_ptr ) == 8 );
+  failtest( png_get_channels( png_ptr, info_ptr ) == 4 );
+  failtest( png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGBA );
+  
+  png_bytep* row_pointers = failtest( new png_bytep[_height] );
+  for (uintptr_t row = 0; row < _height; ++row)
+    row_pointers[row] = (png_byte*)(&_dst[row*_width]);
+
+  png_set_rows( png_ptr, info_ptr, row_pointers );
+
+  /* Read the image data from the PNG file */
+  png_read_image( png_ptr, row_pointers );
+  png_read_end( png_ptr, info_ptr );
+  for (uintptr_t idx = 0; idx < _width*_height; ++idx) std::swap(_dst[idx].b, _dst[idx].r);
+}

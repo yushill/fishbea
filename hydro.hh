@@ -15,7 +15,7 @@ namespace hydro
   template <typename mapT>
   bool grad( mapT const& _table, Point<int32_t> const& pos, Point<float>& _grad )
   {
-    if ((pos.m_y<=0) or (pos.m_y>=(VideoConfig::height-1)) or (pos.m_x<=0) or (pos.m_x>=(VideoConfig::width-1))) return false;
+    if ((pos.m_y<=0) or (pos.m_y>=(Screen::height-1)) or (pos.m_x<=0) or (pos.m_x>=(Screen::width-1))) return false;
     int32_t vx0; if ((vx0 = _table[pos.m_y][pos.m_x-1].value) & 0x80000000) return false;
     int32_t vx1; if ((vx1 = _table[pos.m_y][pos.m_x+1].value) & 0x80000000) return false;
     int32_t vy0; if ((vy0 = _table[pos.m_y-1][pos.m_x].value) & 0x80000000) return false;
@@ -29,7 +29,7 @@ namespace hydro
   template <typename mapT, typename actionT>
   void effect( mapT const& _table, actionT& _action )
   {
-    screen_t& screen = _action.m__screen;
+    screen_t& screen = _action.thescreen.pixels;
     date_t date = _action.now();
     for (int y = 0, ystop = pixheight(screen); y < ystop; ++y) {
       for (int x = 0, xstop = pixwidth(screen); x < xstop; ++x) {

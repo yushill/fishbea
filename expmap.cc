@@ -11,12 +11,12 @@
 namespace {
   struct ExpHydroMap
   {
-    hydro::Delay table[2][VideoConfig::height][VideoConfig::width];
+    hydro::Delay table[2][Screen::height][Screen::width];
     ExpHydroMap()
     {
-      for (uintptr_t y = 0; y < VideoConfig::height; ++y) {
-        for (uintptr_t x = 0; x < VideoConfig::width; ++x) {
-          Point<float> pos( x-0.5*(VideoConfig::width-1), y-0.5*(VideoConfig::height-1) );
+      for (uintptr_t y = 0; y < Screen::height; ++y) {
+        for (uintptr_t x = 0; x < Screen::width; ++x) {
+          Point<float> pos( x-0.5*(Screen::width-1), y-0.5*(Screen::height-1) );
           double sqnorm = pos.sqnorm();
           double norm = sqrt( sqnorm );
           // double radial = sqnorm < 160*160 ? (sqnorm*norm/65536) : nan("");
@@ -30,12 +30,12 @@ namespace {
           table[0][y][x].set( normal + radial );
         }
       }
-      for (uintptr_t y = 0; y < VideoConfig::height; ++y) {
-        for (uintptr_t x = 0; x < VideoConfig::width; ++x) {
-          if ((y < 32) or (y > (VideoConfig::height-32))) { table[1][y][x].set( nan("") ); continue; }
-          if ((x < 32) or (x > (VideoConfig::width-32))) { table[1][y][x].set( nan("") ); continue; }
-          float center = (sin( float( x ) * M_PI * 2 * 3 / VideoConfig::width ) * 128 + 192);
-          table[1][y][x].set( 16 * std::max( ((center - y) / float(center - 32)), ((center - y) / float(center - (VideoConfig::height-32))) ) );
+      for (uintptr_t y = 0; y < Screen::height; ++y) {
+        for (uintptr_t x = 0; x < Screen::width; ++x) {
+          if ((y < 32) or (y > (Screen::height-32))) { table[1][y][x].set( nan("") ); continue; }
+          if ((x < 32) or (x > (Screen::width-32))) { table[1][y][x].set( nan("") ); continue; }
+          float center = (sin( float( x ) * M_PI * 2 * 3 / Screen::width ) * 128 + 192);
+          table[1][y][x].set( 16 * std::max( ((center - y) / float(center - 32)), ((center - y) / float(center - (Screen::height-32))) ) );
         }
       }
     }

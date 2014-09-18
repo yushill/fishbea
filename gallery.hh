@@ -15,7 +15,7 @@ struct gallery
   static Pixel shiny_starfish[32][48];
   static screen_t classic_bg;
   
-  static void __init__( SDL_Surface* _screen );
+  static void __init__();
   static void __exit__();
   
   static ImageStore __is__;

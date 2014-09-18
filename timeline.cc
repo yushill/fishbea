@@ -14,7 +14,7 @@
 TimeLine::~TimeLine() { delete m_thumb; }
 
 void
-TimeLine::setthumb( Thumb* _thumb )
+TimeLine::setthumb( Screen* _thumb )
 {
   delete m_thumb;
   m_thumb = _thumb;
@@ -51,7 +51,7 @@ TimeLine::TimeLine( date_t date )
   this->update_usetime();
 }
 
-TimeLine::TimeLine( date_t date, Room const& _room, Point<float> const& _position, bool _fire, Thumb* thumb )
+TimeLine::TimeLine( date_t date, Room const& _room, Point<float> const& _position, bool _fire, Screen* thumb )
   : m_fwd(this), m_bwd(this), m_usetime(), m_thumb(thumb)
 {
   Chunk& chunk = m_map.insert( m_map.end(), std::make_pair( date, Chunk() ) )->second;

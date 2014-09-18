@@ -15,7 +15,7 @@ screen_t gallery::classic_bg;
 
 ImageStore gallery::__is__( gallery::__init__, gallery::__exit__ );
 
-void gallery::__init__( SDL_Surface* _screen )
+void gallery::__init__()
 {
   image_pngload( hero, "data/Nemo.png" );
   

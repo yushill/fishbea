@@ -11,7 +11,7 @@ main( int argc, char** argv )
 {
   VideoConfig vc;
   
-  Action action( vc.screen );
+  Action action;
   
   action.moveto( DiaMesh::start_incoming() );
   
@@ -19,7 +19,7 @@ main( int argc, char** argv )
   
   try { action.run(); }
   
-  catch (PlayerInterface::Quit) { action.endstats( std::cerr ); std::cerr << "Bye!\n"; }
+  catch (Action::Quit) { action.endstats( std::cerr ); std::cerr << "Bye!\n"; }
   
   return 0;
 }

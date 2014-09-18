@@ -12,12 +12,12 @@ namespace
 {
   struct SpiralHydroField
   {
-    hydro::Delay table[VideoConfig::height][VideoConfig::width];
+    hydro::Delay table[Screen::height][Screen::width];
     SpiralHydroField()
     {
-      for (uintptr_t y = 0; y < VideoConfig::height; ++y) {
-        for (uintptr_t x = 0; x < VideoConfig::width; ++x) {
-          Point<float> pos( x-0.5*(VideoConfig::width-1), y-0.5*(VideoConfig::height-1) );
+      for (uintptr_t y = 0; y < Screen::height; ++y) {
+        for (uintptr_t x = 0; x < Screen::width; ++x) {
+          Point<float> pos( x-0.5*(Screen::width-1), y-0.5*(Screen::height-1) );
           double sqnorm = pos.sqnorm();
           double norm = sqrt( sqnorm );
           // double radial = sqnorm < 160*160 ? (sqnorm*norm/65536) : nan("");
@@ -48,7 +48,7 @@ namespace
       bool over_end, over_start;
   
       {
-        Point<int32_t> pos( VideoConfig::diag()/2 );
+        Point<int32_t> pos( Screen::diag()/2 );
         over_end = (pos.rebind<float>() - _action.pos()).sqnorm() <= 24*24;
         _action.centerblit( pos, over_end ? gallery::shiny_shell : gallery::shell );
       }
@@ -72,23 +72,23 @@ namespace
 }
 
 Gate Spiral::start_incoming() { return Gate( new SpiralRoomBuf, Point<int32_t>(50, 50) ); }
-Gate Spiral::end_incoming() { return Gate( new SpiralRoomBuf, Point<int32_t>(VideoConfig::width/2, VideoConfig::height/2) ); }
+Gate Spiral::end_incoming() { return Gate( new SpiralRoomBuf, Point<int32_t>(Screen::width/2, Screen::height/2) ); }
 
 namespace {
   struct SlalomHydroField
   {
-    hydro::Delay table[VideoConfig::height][VideoConfig::width];
+    hydro::Delay table[Screen::height][Screen::width];
     SlalomHydroField()
     {
-      for (int32_t y = 0; y < VideoConfig::height; ++y) {
-        for (int32_t x = 0; x < VideoConfig::width; ++x) {
-          if ((x < 40) or (x > (VideoConfig::width-40))) {
+      for (int32_t y = 0; y < Screen::height; ++y) {
+        for (int32_t x = 0; x < Screen::width; ++x) {
+          if ((x < 40) or (x > (Screen::width-40))) {
             table[y][x].set( nan("") );
-          } else if ((y < 40) or (y > (VideoConfig::height-40))) {
+          } else if ((y < 40) or (y > (Screen::height-40))) {
             table[y][x].set( (40-x)/27. );
           } else {
-            float center = (sin( (x+40)*M_PI*2./160. )*128 + VideoConfig::height/2);
-            table[y][x].set( 7 * std::max( ((center - y) / float(center - 32)), ((center - y) / float(center - (VideoConfig::height-32))) ) );
+            float center = (sin( (x+40)*M_PI*2./160. )*128 + Screen::height/2);
+            table[y][x].set( 7 * std::max( ((center - y) / float(center - 32)), ((center - y) / float(center - (Screen::height-32))) ) );
           }
         }
       }
@@ -113,7 +113,7 @@ namespace {
       end.pull( ybeg, yend );
       for (int32_t x = xbeg; x < xend; ++x) {
         for (int32_t y = ybeg; y < yend; ++y) {
-          _action.m__screen[y][x].set( 0, 0, 0, 0xff );
+          _action.thescreen.pixels[y][x].set( 0, 0, 0, 0xff );
         }
       }
     }
@@ -132,10 +132,10 @@ namespace {
       // Walls
       for (int idx = 0; idx < 4; ++idx)
         {
-          wall( _action,  40 + idx*160, 40, VideoConfig::height/2-24 );
-          wall( _action,  40 + idx*160, VideoConfig::height/2, VideoConfig::height-40 );
-          wall( _action, 120 + idx*160, 40, VideoConfig::height/2 );
-          wall( _action, 120 + idx*160, VideoConfig::height/2+24, VideoConfig::height-40 );
+          wall( _action,  40 + idx*160, 40, Screen::height/2-24 );
+          wall( _action,  40 + idx*160, Screen::height/2, Screen::height-40 );
+          wall( _action, 120 + idx*160, 40, Screen::height/2 );
+          wall( _action, 120 + idx*160, Screen::height/2+24, Screen::height-40 );
         }
       {
         static Point<float> m1;
@@ -149,15 +149,15 @@ namespace {
         }
         m1 = m2;
       }
-      _action.cutmotion( Point<float>( 0, 0 ), Point<float>( VideoConfig::width, 0 ) );
-      _action.cutmotion( Point<float>( VideoConfig::width, 0 ), Point<float>( VideoConfig::width, VideoConfig::height ) );
-      _action.cutmotion( Point<float>( VideoConfig::width, VideoConfig::height ), Point<float>( 0, VideoConfig::height ) );
-      _action.cutmotion( Point<float>( 0, VideoConfig::height ), Point<float>( 0, 0 ) );
+      _action.cutmotion( Point<float>( 0, 0 ), Point<float>( Screen::width, 0 ) );
+      _action.cutmotion( Point<float>( Screen::width, 0 ), Point<float>( Screen::width, Screen::height ) );
+      _action.cutmotion( Point<float>( Screen::width, Screen::height ), Point<float>( 0, Screen::height ) );
+      _action.cutmotion( Point<float>( 0, Screen::height ), Point<float>( 0, 0 ) );
     }
   };
 }
 
 Gate Slalom::start_incoming() { return Gate( new SlalomRoomBuf, Point<int32_t>(20, 20) ); }
-Gate Slalom::end_incoming() { return Gate( new SlalomRoomBuf, Point<int32_t>(VideoConfig::width/2, VideoConfig::height/2) ); }
+Gate Slalom::end_incoming() { return Gate( new SlalomRoomBuf, Point<int32_t>(Screen::width/2, Screen::height/2) ); }
 
 

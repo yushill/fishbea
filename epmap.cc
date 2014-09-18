@@ -11,11 +11,11 @@
 namespace {
   struct EpHydroField
   {
-    hydro::Delay table[VideoConfig::height][VideoConfig::width];
+    hydro::Delay table[Screen::height][Screen::width];
     EpHydroField()
     {
-      for (uintptr_t y = 0; y < VideoConfig::height; ++y) {
-        for (uintptr_t x = 0; x < VideoConfig::width; ++x) {
+      for (uintptr_t y = 0; y < Screen::height; ++y) {
+        for (uintptr_t x = 0; x < Screen::width; ++x) {
           Point<float> pos( 479.5-x, 191.5-y );
           double sqnorm = pos.sqnorm();
           table[y][x].set( sqnorm < 160*160 ? (sqnorm*sqrt( sqnorm )/65536) : nan("") );
