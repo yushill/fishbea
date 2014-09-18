@@ -1,8 +1,10 @@
 #include <gamerinterface.hh>
+#include <geometry.hh>
+#include <video.hh>
 #include <action.hh>
+#include <iostream>
 #include <stdexcept>
 #include <SDL/SDL.h>
-#include <SDL/SDL_keysym.h>
 #include <cmath>
 
 namespace GamerInterface

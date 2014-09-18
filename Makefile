@@ -2,7 +2,7 @@ CXX=g++
 
 CPPFLAGS=-I.
 CXXFLAGS=-g3 -Wall
-LIBS=-lSDL -lSDL_image -lpng
+LIBS=-lSDL -lpng
 
 SRCS=top.cc timeline.cc video.cc action.cc gamerinterface.cc gallery.cc dmmap.cc epmap.cc expmap.cc slideroom.cc pebblemap.cc
 

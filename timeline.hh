@@ -3,10 +3,9 @@
 
 #include <geometry.hh>
 #include <map.hh>
-#include <inttypes.h>
 #include <vector>
 #include <map>
-#include <iosfwd>
+#include <inttypes.h>
 
 typedef uint64_t date_t;
 

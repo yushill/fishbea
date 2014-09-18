@@ -1,11 +1,8 @@
 #include <video.hh>
 #include <png.h>
-#include <iostream>
-#include <fstream>
-#include <stdexcept>
+#include <algorithm>
 #include <cassert>
 #include <cstdio>
-#include <cstring>
 
 namespace { template <typename T> T failtest( T _p ) { assert( _p ); return _p; } }
 

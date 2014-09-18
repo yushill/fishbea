@@ -3,13 +3,13 @@
 #include <video.hh>
 #include <iostream>
 #include <sstream>
-#include <limits>
-#include <algorithm>
 #include <map>
 #include <set>
 #include <vector>
 #include <stdexcept>
-#include <inttypes.h>
+// #include <algorithm>
+// #include <limits>
+// #include <inttypes.h>
 
 TimeLine::~TimeLine() { delete m_thumb; }
 

@@ -6,8 +6,6 @@
 #include <map.hh>
 #include <timeline.hh>
 #include <bitset>
-#include <iostream>
-#include <iosfwd>
 
 struct Action
 {

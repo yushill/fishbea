@@ -9,7 +9,8 @@ struct Pixel
   uint8_t b,g,r,a;
   Pixel() {}
   Pixel( uint8_t _b, uint8_t _g, uint8_t _r, uint8_t _a ) : b(_b),g(_g),r(_r),a(_a) {}
-  void set( uint8_t _b, uint8_t _g, uint8_t _r, uint8_t _a ) { new (this) Pixel( _b,_g,_r,_a ); }
+  Pixel( Pixel const& _p ) : b(_p.b),g(_p.g),r(_p.r),a(_p.a) {}
+  void set( uint8_t _b, uint8_t _g, uint8_t _r, uint8_t _a ) { (*this) = Pixel( _b,_g,_r,_a ); }
 };
 
 template <uintptr_t WIDTH, uintptr_t HEIGHT>

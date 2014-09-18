@@ -1,9 +1,8 @@
 #ifndef __GAMERINTERFACE_HH__
 #define __GAMERINTERFACE_HH__
 
-#include <video.hh>
-
-struct Action;
+#include <geometry.hh>
+#include <fwd.hh>
 
 namespace GamerInterface
 {

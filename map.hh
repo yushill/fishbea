@@ -2,9 +2,9 @@
 #define __MAP_HH__
 
 #include <geometry.hh>
-#include <inttypes.h>
-#include <typeinfo>
 #include <string>
+#include <typeinfo>
+#include <inttypes.h>
 
 struct Action;
 
