@@ -38,17 +38,9 @@ void pixcpy( Pixel (&dst)[HEIGHT][WIDTH], Pixel (&src)[HEIGHT][WIDTH] )
   for (int idx = 0; idx < WIDTH*HEIGHT; ++idx) (&dst[0][0])[idx] = (&src[0][0])[idx];
 }
 
-typedef Pixel screen_t[384][640];
-
 template <uintptr_t WIDTH, uintptr_t HEIGHT> uintptr_t pixwidth( Pixel (&dst)[HEIGHT][WIDTH] ) { return WIDTH; }
 template <uintptr_t WIDTH, uintptr_t HEIGHT> uintptr_t pixheight( Pixel (&dst)[HEIGHT][WIDTH] ) { return HEIGHT; }
-
-struct ScreenCfg
-{
-  static int32_t        width() { screen_t model; return pixwidth( model ); }
-  static int32_t        height() { screen_t model; return pixheight( model ); }
-  static Point<int32_t> diag() { screen_t model; return Point<int32_t>( pixwidth( model ), pixheight( model ) ); }
-};
+template <uintptr_t WIDTH, uintptr_t HEIGHT> uintptr_t pixarea( Pixel (&dst)[HEIGHT][WIDTH] ) { return WIDTH*HEIGHT; }
 
 template <typename kerT, uintptr_t WIDTH, uintptr_t HEIGHT>
 void
@@ -132,17 +124,18 @@ template <uint8_t B, uint8_t G, uint8_t R, uint8_t A>
 struct Fill { void operator() ( Pixel& pix ) const { pix.b = B; pix.g = G; pix.r = R; pix.a = A; }};
 
 struct Screen {
-  static const int32_t width = 640;
-  static const int32_t height = 384;
-  static Point<int32_t> diag() { return Point<int32_t>( width, height ); }
-  Pixel pixels[height][width];
+  static const int32_t   width = 640;
+  static const int32_t   height = 384;
+  static Point<int32_t>  diag() { return Point<int32_t>( width, height ); }
+  typedef Pixel          pixels_t[height][width];
+  pixels_t               pixels;
+  
   Screen() {}
   Screen( Screen const& _screen )
   {
-    for (uintptr_t idx = 0; idx < pixwidth(pixels)*pixheight(pixels); ++idx)
+    for (uintptr_t idx = 0; idx < pixarea(pixels); ++idx)
       (&pixels[0][0])[idx] = (&_screen.pixels[0][0])[idx];
   }
 };
   
-
 #endif /* __IMAGE_HH__ */

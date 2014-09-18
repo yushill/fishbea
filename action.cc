@@ -42,7 +42,7 @@ void Action::run()
     m_story.append( m_room, m_pos, fires() );
     
     if (cmds[DelBwd]) {
-      std::cout << "position: {" << m_pos.m_x << ',' << m_pos.m_y << "}\n";
+      std::cout << "position: {" << m_pos.x << ',' << m_pos.y << "}\n";
     }
     
     if (cmds[Jump]) {
@@ -120,12 +120,12 @@ Action::jump()
   this->flipandwait();
   {
     // Animate thumb apparition
-    screen_t begin; pixcpy( begin, thescreen.pixels );
+    Screen begin( thescreen );
     image_apply( Grayify(), thumb->pixels );
     
     for (int idx = 0; idx < 16; ++idx)
       {
-        image_fade( thescreen.pixels, thumb->pixels, begin, idx*16 );
+        image_fade( thescreen.pixels, thumb->pixels, begin.pixels, idx*16 );
         this->flipandwait();
       }
   }
@@ -212,15 +212,15 @@ Action::cutmotion( Point<float> const& w1, Point<float> const& w2 )
 void
 Action::cornerblit( Point<int32_t> const& _pos, Pixel* data, uintptr_t width, uintptr_t height )
 {
-  int32_t const ybeg = std::max( 0, -_pos.m_y );
-  int32_t const yend = std::min( int32_t( height ), int32_t( pixheight(thescreen.pixels) )-_pos.m_y );
-  int32_t const xbeg = std::max( 0, -_pos.m_x );
-  int32_t const xend = std::min( int32_t( width ), int32_t( pixwidth(thescreen.pixels) )-_pos.m_x );
+  int32_t const ybeg = std::max( 0, -_pos.y );
+  int32_t const yend = std::min( int32_t( height ), int32_t( pixheight(thescreen.pixels) )-_pos.y );
+  int32_t const xbeg = std::max( 0, -_pos.x );
+  int32_t const xend = std::min( int32_t( width ), int32_t( pixwidth(thescreen.pixels) )-_pos.x );
   
   for (int32_t y = ybeg; y < yend; ++y) {
     for (int32_t x = xbeg; x < xend; ++x) {
       Pixel& src = data[y*width+x];
-      Pixel& dst = thescreen.pixels[y+_pos.m_y][x+_pos.m_x];
+      Pixel& dst = thescreen.pixels[y+_pos.y][x+_pos.x];
       unsigned int alpha = src.a + 1;
       unsigned int omega = 256 - src.a;
       dst.b = (omega*dst.b + alpha*src.b) >> 8;

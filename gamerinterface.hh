@@ -11,7 +11,7 @@ namespace GamerInterface
   void            exit();
   void            collect( Action& action );
   Point<float>    motion( Action& action );
-  int             flipandwait( screen_t& _screen, int next_ticks );
+  int             flipandwait( Screen& _screen, int next_ticks );
 };
 
 #endif /* __GAMERINTERFACE_HH__ */

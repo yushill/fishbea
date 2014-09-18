@@ -41,10 +41,10 @@ namespace {
     static bool gridpos( Point<int32_t> const& _initial, Point<int32_t>& _final )
     {
       Point<int32_t> tmp( _initial );
-      tmp -= ((ScreenCfg::diag() - Point<int32_t>(RoomBufT::side,RoomBufT::side) * RoomBufT::blocsize) / 2);
-      if ((tmp.m_y < 0) or (tmp.m_x < 0)) return false;
+      tmp -= ((Screen::diag() - Point<int32_t>(RoomBufT::side,RoomBufT::side) * RoomBufT::blocsize) / 2);
+      if ((tmp.y < 0) or (tmp.x < 0)) return false;
       tmp /= RoomBufT::blocsize;
-      if ((tmp.m_y >= RoomBufT::side) or (tmp.m_x >= RoomBufT::side)) return false;
+      if ((tmp.y >= RoomBufT::side) or (tmp.x >= RoomBufT::side)) return false;
       _final = tmp;
       return true;
     }
@@ -64,18 +64,20 @@ namespace {
     }
     
     {
-      Pixel bloc[roombuf.blocsize][roombuf.blocsize];
-      for (int pix = 0; pix < roombuf.blocsize*roombuf.blocsize; ++pix)
-        bloc[pix/roombuf.blocsize][pix%roombuf.blocsize].set( 0xff, 0xff, 0xff, 0xff );
-      
       for (int32_t y = 0; y < roombuf.side; ++y) {
         for (int32_t x = 0; x < roombuf.side; ++x) {
           Point<int32_t> blocpos( 2*x+1-roombuf.side, 2*y+1-roombuf.side );
-          blocpos = (blocpos*roombuf.blocsize + ScreenCfg::diag())/2;
-          uint8_t alpha = pebbling.board.active( mkpoint(x,y) ) ? 170 : 85;
-          for (int pix = 0; pix < roombuf.blocsize*roombuf.blocsize; ++pix)
-            bloc[pix/roombuf.blocsize][pix%roombuf.blocsize].a = alpha;
-          _action.centerblit( blocpos, bloc );
+          blocpos = (blocpos*roombuf.blocsize + Screen::diag())/2;
+          uint8_t alpha = (pebbling.board.active( mkpoint(x,y) ) ? 170 : 85);
+          uint16_t b = (alpha+1)*0xff, a = (256-alpha);
+          for (int32_t yb = -(roombuf.blocsize/2); yb < (roombuf.blocsize/2); ++yb) {
+            for (int32_t xb = -(roombuf.blocsize/2); xb < (roombuf.blocsize/2); ++xb) {
+              Pixel& pix = _action.thescreen.pixels[blocpos.y+yb][blocpos.x+xb];
+              pix.b = (a*pix.b + b) >> 8;
+              pix.g = (a*pix.g + b) >> 8;
+              pix.r = (a*pix.r + b) >> 8;
+            }
+          }
         }
       }
     }
@@ -85,8 +87,8 @@ namespace {
       for (int32_t y = 0; y < 6; ++y) {
         for (int32_t x = 0; x < roombuf.blocsize; ++x) {
           bloc[0][y][x].set( 0, 0, 0, 0xff );
-          wallcolor( roombuf, x, -y, _action.now(), bloc[1][y][x] );
-          wallcolor( roombuf, x, +y, _action.now(), bloc[2][y][x] );
+          wallcolor( roombuf, x, y, -_action.now(), bloc[1][y][x] );
+          wallcolor( roombuf, x, y, +_action.now(), bloc[2][y][x] );
         }
       }
       
@@ -95,7 +97,7 @@ namespace {
           PebbleWall wall = pebbling.board.hwall( x, y );
           if (wall == NONE) continue;
           Point<int32_t>
-            pt1( (Point<int32_t>( 2*x-roombuf.side, 2*y-roombuf.side )*roombuf.blocsize + ScreenCfg::diag())/2 ),
+            pt1( (Point<int32_t>( 2*x-roombuf.side, 2*y-roombuf.side )*roombuf.blocsize + Screen::diag())/2 ),
             pt2( (pt1 + Point<int32_t>( roombuf.blocsize, 0 )) );
           _action.centerblit( (pt1+pt2)/2, bloc[wall] );
           _action.cutmotion( pt1.rebind<float>(), pt2.rebind<float>() );
@@ -109,8 +111,8 @@ namespace {
         for (int32_t x = 0; x < 6; ++x)
           {
             bloc[0][y][x].set( 0, 0, 0, 0xff );
-            wallcolor( roombuf, y, -x, _action.now(), bloc[1][y][x] );
-            wallcolor( roombuf, y, +x, _action.now(), bloc[2][y][x] );
+            wallcolor( roombuf, y, x, -_action.now(), bloc[1][y][x] );
+            wallcolor( roombuf, y, x, +_action.now(), bloc[2][y][x] );
           }
       
       for (int32_t y = 0; y < (roombuf.side+0); ++y) {
@@ -118,7 +120,7 @@ namespace {
           PebbleWall wall = pebbling.board.vwall( x, y );
           if (wall == NONE) continue;
           Point<int32_t>
-            pt1( (Point<int32_t>( 2*x-roombuf.side, 2*y-roombuf.side )*roombuf.blocsize + ScreenCfg::diag())/2 ),
+            pt1( (Point<int32_t>( 2*x-roombuf.side, 2*y-roombuf.side )*roombuf.blocsize + Screen::diag())/2 ),
             pt2( (pt1 + Point<int32_t>( 0, roombuf.blocsize )) );
           _action.centerblit( (pt1+pt2)/2, bloc[wall] );
           _action.cutmotion( pt1.rebind<float>(), pt2.rebind<float>() );
@@ -130,7 +132,7 @@ namespace {
       Point<int32_t> pos;
       if (pebbling.gridpos( _action.pos().rebind<int32_t>(), pos )) {
         _action.fired();
-        if ((pos.m_x == (roombuf.side-1)) and (pos.m_y == (roombuf.side-1))) return true;
+        if ((pos.x == (roombuf.side-1)) and (pos.y == (roombuf.side-1))) return true;
         _action.moveto( DiaMesh::start_incoming() );
       }
           
@@ -161,8 +163,8 @@ namespace {
       PebbleBoard(DiaMeshRoomBuf const&) : count(5) { for (int idx = 0; idx < side*side; ++idx) (&table[0][0])[idx] = false; }
       bool table[side][side];
       intptr_t count;
-      void activate( Point<int32_t> const& p ) { table[p.m_y][p.m_x] = true; }
-      bool active( Point<int32_t> const& p ) { return table[p.m_y][p.m_x]; }
+      void activate( Point<int32_t> const& p ) { table[p.y][p.x] = true; }
+      bool active( Point<int32_t> const& p ) { return table[p.y][p.x]; }
       PebbleWall hwall( int32_t x, int32_t y )
       {
         if (count < 0) return PLAIN;

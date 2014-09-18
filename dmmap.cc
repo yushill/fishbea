@@ -60,14 +60,14 @@ struct DMRoomBuf : public virtual RoomBuf
     }
     door_index = perm_table[door_index];
     // Returing door position according to shuffled index.
-    return Point<int32_t>( ScreenCfg::width()/2, ScreenCfg::height()/2 ) + ThePositions( door_index )*96;
+    return Point<int32_t>( Screen::width/2, Screen::height/2 ) + ThePositions( door_index )*96;
   }
 
   Gate
   door_upcoming( int32_t door_index ) const
   {
     Point<int32_t> pos = ThePositions( door_index );
-    DMRoomBuf* r = new DMRoomBuf( m_index + pos.m_x + pos.m_y*TheSide );
+    DMRoomBuf* r = new DMRoomBuf( m_index + pos.x + pos.y*TheSide );
     return Gate( r, r->door_position( door_index ^ 2 ) );
   }
 };

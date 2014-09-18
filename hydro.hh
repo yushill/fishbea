@@ -12,13 +12,13 @@ namespace hydro
   template <typename mapT>
   bool grad( mapT const& _table, Point<int32_t> const& pos, Point<float>& _grad )
   {
-    if ((pos.m_y<=0) or (pos.m_y>=(Screen::height-1)) or (pos.m_x<=0) or (pos.m_x>=(Screen::width-1))) return false;
-    int32_t vx0; if ((vx0 = _table[pos.m_y][pos.m_x-1].value) & 0x80000000) return false;
-    int32_t vx1; if ((vx1 = _table[pos.m_y][pos.m_x+1].value) & 0x80000000) return false;
-    int32_t vy0; if ((vy0 = _table[pos.m_y-1][pos.m_x].value) & 0x80000000) return false;
-    int32_t vy1; if ((vy1 = _table[pos.m_y+1][pos.m_x].value) & 0x80000000) return false;
-    _grad.m_x = double( (vx1-vx0) << 1 ) / 2 / double( 1<<29 );
-    _grad.m_y = double( (vy1-vy0) << 1 ) / 2 / double( 1<<29 );
+    if ((pos.y<=0) or (pos.y>=(Screen::height-1)) or (pos.x<=0) or (pos.x>=(Screen::width-1))) return false;
+    int32_t vx0; if ((vx0 = _table[pos.y][pos.x-1].value) & 0x80000000) return false;
+    int32_t vx1; if ((vx1 = _table[pos.y][pos.x+1].value) & 0x80000000) return false;
+    int32_t vy0; if ((vy0 = _table[pos.y-1][pos.x].value) & 0x80000000) return false;
+    int32_t vy1; if ((vy1 = _table[pos.y+1][pos.x].value) & 0x80000000) return false;
+    _grad.x = double( (vx1-vx0) << 1 ) / 2 / double( 1<<29 );
+    _grad.y = double( (vy1-vy0) << 1 ) / 2 / double( 1<<29 );
     return true;
   }
 
@@ -26,10 +26,9 @@ namespace hydro
   template <typename mapT, typename actionT>
   void effect( mapT const& _table, actionT& _action )
   {
-    screen_t& screen = _action.thescreen.pixels;
     date_t date = _action.now();
-    for (int y = 0, ystop = pixheight(screen); y < ystop; ++y) {
-      for (int x = 0, xstop = pixwidth(screen); x < xstop; ++x) {
+    for (int y = 0, ystop = Screen::height; y < ystop; ++y) {
+      for (int x = 0, xstop = Screen::width; x < xstop; ++x) {
         int32_t value = _table[y][x].value;
         if (value & 0x80000000) continue;
         uint32_t lum = ((value - date*(1<<28)) >> 22) & 0x1ff;
@@ -40,9 +39,11 @@ namespace hydro
         int32_t decay = 128*std::max(1.-sqn, 0.);
         uint32_t alpha = (lum*decay >> 8) & 0xff;
         uint32_t a = 256-alpha, b = (alpha+1)*0xff;
-        screen[y][x].b = (a*screen[y][x].b + b) >> 8;
-        screen[y][x].g = (a*screen[y][x].g + b) >> 8;
-        screen[y][x].r = (a*screen[y][x].r + b) >> 8;
+        
+        Pixel& pix = _action.thescreen.pixels[y][x];
+        pix.b = (a*pix.b + b) >> 8;
+        pix.g = (a*pix.g + b) >> 8;
+        pix.r = (a*pix.r + b) >> 8;
       }
     }
   }

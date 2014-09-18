@@ -24,7 +24,7 @@ namespace {
             (norm < 160) ? (((norm-128)*(norm-128) + 128)*(norm-128)/2048) :
             nan("");
           
-          double angle = (atan2(pos.m_y, pos.m_x)+M_PI);
+          double angle = (atan2(pos.y, pos.x)+M_PI);
           double normal = angle*64/M_PI;
           table[0][y][x].set( normal + radial );
         }

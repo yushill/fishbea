@@ -19,7 +19,7 @@ struct Action
   void run();
   enum timebar_style { tbs_full = 0, tbs_point };
   void draw_timebar( timebar_style tbs );
-  void flipandwait() { m_lastflip = GamerInterface::flipandwait( thescreen.pixels, m_lastflip + FramePeriod ); }
+  void flipandwait() { m_lastflip = GamerInterface::flipandwait( thescreen, m_lastflip + FramePeriod ); }
   void jump();
   bool fires() const { return cmds[Fire]; }
   void fired() { cmds.reset(Fire); }
@@ -47,7 +47,7 @@ private:
   
 public:
   // Engine
-  void moveto( Gate const& gate ) { m_room = gate.room; m_pos = Point<float>( gate.pos.m_x, gate.pos.m_y ); }
+  void moveto( Gate const& gate ) { m_room = gate.room; m_pos = Point<float>( gate.pos.x, gate.pos.y ); }
   void normalmotion() { m_pos += GamerInterface::motion( *this )*(cmds[Shift] ? SlowMotion : FastMotion); }
   void moremotion( Point<float> const& _delta ) { m_pos += _delta; }
   void cutmotion( Point<float> const& w1, Point<float> const& w2 );

@@ -21,7 +21,7 @@ struct Character
   
   Character() {}
   Character( unsigned int _room, Point<float> const& _position, bool _fire )
-    : xpos(_position.m_x), ypos(_position.m_y), room(_room), fire(_fire)
+    : xpos(_position.x), ypos(_position.y), room(_room), fire(_fire)
   {}
 };
 

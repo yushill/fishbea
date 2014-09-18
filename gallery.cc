@@ -10,7 +10,7 @@ Pixel gallery::shell[48][48];
 Pixel gallery::shiny_shell[48][48];
 Pixel gallery::starfish[32][48];
 Pixel gallery::shiny_starfish[32][48];
-screen_t gallery::classic_bg;
+Screen::pixels_t gallery::classic_bg;
 
 ImageStore gallery::__is__( gallery::__init__, gallery::__exit__ );
 

@@ -13,7 +13,7 @@ struct gallery
   static Pixel shiny_shell[48][48];
   static Pixel starfish[32][48];
   static Pixel shiny_starfish[32][48];
-  static screen_t classic_bg;
+  static Screen::pixels_t classic_bg;
   
   static void __init__();
   static void __exit__();

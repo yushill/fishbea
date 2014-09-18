@@ -20,9 +20,7 @@ namespace GamerInterface
         throw std::runtime_error( std::string( "Can't init SDL: " ) + SDL_GetError() + '\n' );
       
       SDL_WM_SetCaption( "FishBea", NULL );
-      uintptr_t width, height;
-      { screen_t model; width = pixwidth(model); height = pixheight(model); }
-      screen = SDL_SetVideoMode( width, height, 32, SDL_SWSURFACE );
+      screen = SDL_SetVideoMode( Screen::width, Screen::height, 32, SDL_SWSURFACE );
       if (not screen)
         throw std::runtime_error( std::string( "Can't set video mode: " ) + SDL_GetError() + "\n" );
       
@@ -75,12 +73,12 @@ namespace GamerInterface
   }
 
   int
-  flipandwait( screen_t& screen, int next_ticks )
+  flipandwait( Screen& screen, int next_ticks )
   {
     {
-      void* pixels = reinterpret_cast<void*>( &screen[0][0] );
+      void* pixels = reinterpret_cast<void*>( &screen.pixels[0][0] );
   
-      int height = pixheight(screen), width = pixwidth(screen);
+      int height = Screen::height, width = Screen::width;
       Uint16 pitch = width*4;
       std::swap( pixels, sdl.scratch->pixels );
       std::swap( width, sdl.scratch->w );

@@ -36,9 +36,9 @@ namespace {
       bool match( Room _room, Point<int32_t> const& _pos, bool fire )
       {
         if (_room != room or not fire) return false;
-        int idx = (_pos.m_y >> 6) - 1;
+        int idx = (_pos.y >> 6) - 1;
         if ((idx < 0) or (idx >= 4)) return false;
-        if ((Point<int32_t>( _pos.m_x, _pos.m_y & 63 ) - Point<int32_t>(64,32)).sqnorm() > 24*24) return false;
+        if ((Point<int32_t>( _pos.x, _pos.y & 63 ) - Point<int32_t>(64,32)).sqnorm() > 24*24) return false;
         value |= (1 << idx);
         return false;
       }

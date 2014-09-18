@@ -25,7 +25,7 @@ namespace
             (norm < 160) ? (((norm-128)*(norm-128) + 128)*(norm-128)/2048) :
             nan("");
           
-          double angle = (atan2(pos.m_y, pos.m_x)+M_PI);
+          double angle = (atan2(pos.y, pos.x)+M_PI);
           double normal = angle*16/M_PI;
           table[y][x].set( normal + radial );
         }
@@ -139,12 +139,12 @@ namespace {
       {
         static Point<float> m1;
         Point<float> m2( _action.pos() );
-        float px = fmod( m2.m_x, 80 );
-        std::swap( px, m2.m_x );
-        if ((m1.m_x <= 40.) and (m2.m_x >= 40.)) {
+        float px = fmod( m2.x, 80 );
+        std::swap( px, m2.x );
+        if ((m1.x <= 40.) and (m2.x >= 40.)) {
           Point<float> md = m2 - m1;
-          Point<float> pos( px - m2.m_x + 40, m1.m_y + md.m_y*(40 - m1.m_x)/md.m_x );
-          std::cout << "position: {" << pos.m_x << ',' << pos.m_y << "}\n";
+          Point<float> pos( px - m2.x + 40, m1.y + md.y*(40 - m1.x)/md.x );
+          std::cout << "position: {" << pos.x << ',' << pos.y << "}\n";
         }
         m1 = m2;
       }
