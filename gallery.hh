@@ -2,6 +2,7 @@
 #define __GALLERY_HH__
 
 #include <video.hh>
+#include <action.hh>
 
 struct gallery
 {
@@ -18,7 +19,7 @@ struct gallery
   static void __init__();
   static void __exit__();
   
-  static ImageStore __is__;
+  static Action::Store __is__;
 };
 
 #endif /* __GALLERY_HH__ */

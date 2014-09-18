@@ -6,12 +6,24 @@
 #include <map.hh>
 #include <timeline.hh>
 #include <bitset>
-#include <iosfwd>
-
 #include <iostream>
+#include <iosfwd>
 
 struct Action
 {
+  struct Store {
+    typedef void (*init_method_t)();
+    typedef void (*exit_method_t)();
+    init_method_t init_method;
+    exit_method_t exit_method;
+    Store* next;
+    static Store* pool;
+    Store( init_method_t _init, exit_method_t _exit )
+      : init_method( _init ), exit_method( _exit ), next( pool ) { pool = this; }
+    void init() { if (next) next->init(); init_method(); }
+    void exit() { exit_method(); if (next) next->exit(); }
+  };
+
   Action();
   ~Action();
   

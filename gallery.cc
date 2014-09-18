@@ -12,7 +12,7 @@ Pixel gallery::starfish[32][48];
 Pixel gallery::shiny_starfish[32][48];
 Screen::pixels_t gallery::classic_bg;
 
-ImageStore gallery::__is__( gallery::__init__, gallery::__exit__ );
+Action::Store gallery::__is__( gallery::__init__, gallery::__exit__ );
 
 void gallery::__init__()
 {

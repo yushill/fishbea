@@ -7,18 +7,6 @@
 #include <cstdio>
 #include <cstring>
 
-ImageStore* ImageStore::pool = 0;
-
-VideoConfig::VideoConfig()
-{
-  ImageStore::pool->init();
-}
-  
-VideoConfig::~VideoConfig()
-{
-  ImageStore::pool->exit();
-}
-
 namespace { template <typename T> T failtest( T _p ) { assert( _p ); return _p; } }
 
 void image_pngload( Pixel* _dst, uintptr_t _width, uintptr_t _height, char const* _filepath )

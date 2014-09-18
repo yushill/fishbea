@@ -4,15 +4,19 @@
 #include <memory>
 #include <cmath>
 
+Action::Store* Action::Store::pool = 0;
+
 Action::Action()
   : m_lastflip( 0 ), m_pos(), m_story(), m_room()
 {
   image_apply( Fill<0,0,0,0xff>(), thescreen.pixels );
   GamerInterface::init();
+  Store::pool->init();
 }
 
 Action::~Action()
 {
+  Store::pool->exit();
   GamerInterface::exit();
 }
 

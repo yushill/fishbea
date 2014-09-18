@@ -5,25 +5,6 @@
 #include <string>
 #include <inttypes.h>
 
-struct VideoConfig
-{
-  VideoConfig();
-  ~VideoConfig();
-};
-
-struct ImageStore {
-  typedef void (*init_method_t)();
-  typedef void (*exit_method_t)();
-  init_method_t init_method;
-  exit_method_t exit_method;
-  ImageStore* next;
-  static ImageStore* pool;
-  ImageStore( init_method_t _init, exit_method_t _exit )
-    : init_method( _init ), exit_method( _exit ), next( pool ) { pool = this; }
-  void init() { if (next) next->init(); init_method(); }
-  void exit() { exit_method(); if (next) next->exit(); }
-};
-
 struct Pixel
 {
   uint8_t b,g,r,a;

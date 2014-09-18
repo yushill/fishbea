@@ -9,8 +9,6 @@
 int
 main( int argc, char** argv )
 {
-  VideoConfig vc;
-  
   Action action;
   
   action.moveto( DiaMesh::start_incoming() );
