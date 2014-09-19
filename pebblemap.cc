@@ -51,7 +51,7 @@ namespace {
   };
   
   template <typename RoomBufT>
-  bool pebbleprocess( RoomBufT const& roombuf, Action& _action )
+  void pebbleprocess( RoomBufT const& roombuf, Action& _action )
   {
     // Vertical walls
     _action.normalmotion();
@@ -132,14 +132,9 @@ namespace {
       Point<int32_t> pos;
       if (pebbling.gridpos( _action.pos().rebind<int32_t>(), pos )) {
         _action.cmds.reset();
-        if ((pos.x == (roombuf.side-1)) and (pos.y == (roombuf.side-1))) return true;
-        _action.moveto( DiaMesh::start_incoming() );
+        roombuf.moveto( _action , pos );
       }
-          
-      
     }
-    
-    return false;
   }
   
   struct DiaMeshRoomBuf : public virtual RoomBuf
@@ -150,12 +145,12 @@ namespace {
     static int const side = 5;
     static int32_t const blocsize = 64;
     
-    void
-    process( Action& _action ) const
+    void moveto( Action& _action, Point<int32_t> const& _pos ) const
     {
-      _action.cornerblit( Point<int32_t>(), gallery::classic_bg );
-      bool victory = pebbleprocess( *this, _action );
-      if (victory) _action.moveto( DiaMesh::end_upcoming() );
+      if ((_pos.x == (side-1)) and (_pos.y == (side-1)))
+        _action.moveto( DiaMesh::end_upcoming() );
+      else
+        _action.moveto( DiaMesh::start_incoming() );
     }
     
     struct PebbleBoard
@@ -185,6 +180,13 @@ namespace {
       }
       void append() { count -= 1; }
     };
+    
+    void
+    process( Action& _action ) const
+    {
+      _action.cornerblit( Point<int32_t>(), gallery::classic_bg );
+      pebbleprocess( *this, _action );
+    }
   };
   
   struct SimplePebbleRoomBuf : public virtual RoomBuf
@@ -195,12 +197,12 @@ namespace {
     static int const side = 5;
     static int32_t const blocsize = 64;
     
-    void
-    process( Action& _action ) const
+    void moveto( Action& _action, Point<int32_t> const& _pos ) const
     {
-      _action.cornerblit( Point<int32_t>(), gallery::classic_bg );
-      bool victory = pebbleprocess( *this, _action );
-      if (victory) _action.moveto( SimplePebble::end_upcoming() );
+      if ((_pos.x == side/2) and (_pos.y == side/2))
+        _action.moveto( SimplePebble::end_upcoming() );
+      else
+        _action.moveto( SimplePebble::start_incoming() );
     }
     
     struct PebbleBoard
@@ -224,7 +226,7 @@ namespace {
       bool active( Point<int32_t> const& p ) { return cells[cellidx(p.x,p.y)]; }
       PebbleWall hwall( int32_t x, int32_t y ) { return wall( cellidx( x, y-1 ), cellidx( x, y ) ); }
       PebbleWall vwall( int32_t x, int32_t y ) { return wall( cellidx( x-1, y ), cellidx( x, y ) ); }
-      PebbleWall rwall( int src, int dst ) { PebbleWall rev = wall( dst, src ); return rev == FWD ? BWD : rev; } 
+      PebbleWall rwall( int src, int dst ) { PebbleWall rev = wall( dst, src ); return rev == FWD ? BWD : rev; }
       PebbleWall wall( int src, int dst )
       {
         if (src == dst) return NONE;
@@ -245,11 +247,23 @@ namespace {
       }
       void append() { count -= 1; }
     };
+
+    void
+    process( Action& _action ) const
+    {
+      // if ((pos.x == (roombuf.side-1)) and (pos.y == (roombuf.side-1)))
+      //   _action.moveto( roombuf.end_upcoming() );
+      // else
+      //   _action.moveto( roombuf.start_incoming() );
+  
+      _action.cornerblit( Point<int32_t>(), gallery::classic_bg );
+      pebbleprocess( *this, _action );
+    }
   };
 }
 
 Gate DiaMesh::start_incoming() { return Gate( new DiaMeshRoomBuf, Point<int32_t>(50, 190) ); }
-// Gate DiaMesh::end_incoming() { return Gate( new DiaMeshRoomBuf, Point<int32_t>(480, 192) ); }
 
 Gate SimplePebble::start_incoming() { return Gate( new SimplePebbleRoomBuf, Point<int32_t>(50, 190) ); }
+
 Gate SimplePebble::end_upcoming() { return DiaMesh::start_incoming(); }
