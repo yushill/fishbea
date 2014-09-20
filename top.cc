@@ -11,7 +11,7 @@ main( int argc, char** argv )
 {
   Action action;
   
-  action.moveto( SimplePebble::start_incoming() );
+  action.moveto( pebble::Simple::start_incoming() );
   
   std::cerr << "Rolling!!!\n";
   
@@ -33,4 +33,4 @@ Gate Spiral::end_upcoming() { return Slalom::start_incoming(); }
 Gate Slalom::start_upcoming() { return Spiral::end_incoming(); }
 
 Gate Slalom::end_upcoming() { return ExpMap::start_incoming(); }
-Gate DiaMesh::end_upcoming() { return ExpMap::start_incoming(); }
+Gate pebble::DiaMesh::end_upcoming() { return ExpMap::start_incoming(); }

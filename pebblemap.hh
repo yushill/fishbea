@@ -3,16 +3,17 @@
 
 #include <map.hh>
 
-namespace DiaMesh
-{
-  extern Gate start_incoming();
-  extern Gate end_upcoming();
-};
+namespace pebble {
+  namespace Simple
+  {
+    extern Gate start_incoming();
+    extern Gate end_upcoming();
+  };
 
-namespace SimplePebble
-{
-  extern Gate start_incoming();
-  extern Gate end_upcoming();
+  namespace DiaMesh
+  {
+    extern Gate start_incoming();
+    extern Gate end_upcoming();
+  };
 };
-
 #endif /*__PEBBLEMAP_HH__*/
