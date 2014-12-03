@@ -1,6 +1,7 @@
 #include <action.hh>
 #include <gallery.hh>
 #include <iostream>
+#include <iomanip>
 #include <memory>
 #include <cmath>
 
@@ -38,14 +39,19 @@ struct Ghost
   }
 };
 
+std::ostream& operator << ( std::ostream& _sink, Point<float> const& _point )
+{ _sink << "{" << std::setprecision(10) << _point.x << ',' << _point.y << "}"; return _sink; }
+
 void Action::run()
 {
   for (;;) {
     GamerInterface::collect( *this );
     m_story.append( m_room, m_pos, cmds[Fire] );
     
-    if (cmds[DelBwd]) {
-      std::cout << "position: {" << m_pos.x << ',' << m_pos.y << "}\n";
+    static bool dbg = false;
+    if (dbg or cmds[DelBwd]) {
+      dbg = true;
+      std::cerr << "position: " << m_pos << "\n";
     }
     
     if (cmds[Jump]) {
@@ -55,10 +61,15 @@ void Action::run()
     else {
       Room curroom( m_room );
       
+      m_motion = (m_pos - m_origin)*0.5 + m_motion*0.5;
       m_origin = m_pos;
       curroom->process( *this );
       cutmotion( Point<float>( -4, -4 ), Point<float>( pixwidth(thescreen.pixels)+4, -4 ) );
+      Point<float> precut( m_pos );
       cutmotion( Point<float>( pixwidth(thescreen.pixels)+4, -4 ), Point<float>( pixwidth(thescreen.pixels)+4, pixheight(thescreen.pixels)+4 ) );
+      if (m_pos.x > (pixwidth(thescreen.pixels)+4)) {
+        std::cerr << "Crossing: " << m_origin << ", " << m_pos << ", " << precut << std::endl;
+      }
       cutmotion( Point<float>( pixwidth(thescreen.pixels)+4, pixheight(thescreen.pixels)+4 ), Point<float>( -4, pixheight(thescreen.pixels)+4 ) );
       cutmotion( Point<float>( -4, pixheight(thescreen.pixels)+4 ), Point<float>( -4, -4 ) );
       this->centerblit( m_origin.rebind<int32_t>(), gallery::hero );
@@ -147,19 +158,21 @@ Action::moveto( Gate const& gate )
     std::cerr << "Entering room: " << gate.room->getname() << ".\n";
   m_room = gate.room;
   m_pos = Point<float>( gate.pos.x, gate.pos.y );
+  m_origin = m_pos;
 }
 
 void
-Action::cutmotion( Point<float> const& w1, Point<float> const& w2 )
+Action::cutmotion( Point<float> const& _w1, Point<float> const& _w2 )
 {
+  Point<double> w1( _w1.rebind<double>() ), w2( _w2.rebind<double>() );
   // computing intersection
-  Point<float> const& m1( m_origin );
-  Point<float> const& m2( m_pos );
-  Point<float> wd = w2 - w1;
-  Point<float> md = m2 - m1;
-  float det = wd*!md;
-  if (fabs(det) < 1e-6) return;
-  Point<float>  x = md*(w2*!w1)/det - wd*(m2*!m1)/det;
+  Point<double> m1( m_origin.rebind<double>() );
+  Point<double> m2( m_pos.rebind<double>() );
+  Point<double> wd = w2 - w1;
+  Point<double> md = m2 - m1;
+  double det = wd*!md;
+  if (fabs(det) < 2e-38) return;
+  Point<double>  x = (md*(w2*!w1) - wd*(m2*!m1))/det;
   
   // Checking if intersection lies in between m1..m2 and w1..w2 
   if ((m2-x)*(m1-x) > 0) return;
@@ -167,9 +180,9 @@ Action::cutmotion( Point<float> const& w1, Point<float> const& w2 )
   
   // prevent collision
   if ((m1-x).sqnorm() > 8)
-    m_pos = (x*2 + m1)/3;
+    m_pos = ((x*2 + m1)/3).rebind<float>();
   else
-    m_pos = m1;
+    m_pos = m_origin;
 }
 
 void

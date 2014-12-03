@@ -39,28 +39,55 @@ namespace {
       }
     }
   } thm;
-};
 
-struct ExpRoomBuf : public virtual RoomBuf
-{
-  explicit ExpRoomBuf( uintptr_t _idx ) : m_index(_idx) {}
-  int cmp( RoomBuf const& _rb ) const { return tgcmp( m_index, dynamic_cast<ExpRoomBuf const&>( _rb ).m_index ); }
-  std::string getname() const { std::ostringstream oss; oss << "ExpRoom[" << m_index << "]"; return oss.str(); }
-  
-  void
-  process( Action& _action ) const
+  struct ExpRoomBuf : public virtual RoomBuf
   {
-    if ((m_index & -2) == 0) {
-      _action.cornerblit( Point<int32_t>(), gallery::classic_bg );
-      hydro::effect( thm.table[m_index], _action );
-      _action.normalmotion();
-      _action.moremotion( hydro::motion( thm.table[m_index], _action ) );
-    } else if (m_index == 4) {
-      
+    explicit ExpRoomBuf( uintptr_t _idx ) : m_index(_idx) {}
+    int cmp( RoomBuf const& _rb ) const { return tgcmp( m_index, dynamic_cast<ExpRoomBuf const&>( _rb ).m_index ); }
+    std::string getname() const { std::ostringstream oss; oss << "ExpRoom[" << m_index << "]"; return oss.str(); }
+  
+    void
+    process( Action& _action ) const
+    {
+      if ((m_index & -2) == 0) {
+        _action.cornerblit( Point<int32_t>(), gallery::classic_bg );
+        hydro::effect( thm.table[m_index], _action );
+        _action.normalmotion();
+        _action.moremotion( hydro::motion( thm.table[m_index], _action ) );
+      } else if (m_index == 4) {
+        Screen::pixels_t bg;
+        for (int32_t y = 0; y < (int32_t)pixheight( bg ); ++y ) {
+          for (int32_t x = 0; x < (int32_t)pixwidth( bg ); ++x ) {
+            if (y < 200) {
+              bg[y][x].set( 0xc0, 0x80, 0x80, 0xff );
+            }
+            else {
+              bg[y][x].set( 0x80, 0xc0, 0x80, 0xff );
+            }
+          }
+        }
+        _action.cornerblit( Point<int32_t>(), bg );
+        Pixel dot[9][9];
+        for (uintptr_t y = 0; y < pixheight( dot ); ++y) {
+          for (uintptr_t x = 0; x < pixheight( dot ); ++x) {
+            uint8_t color = uint8_t( std::max( 255. - 8*((y-4)*(y-4)+(x-4)*(x-4)), 0. ) );
+            dot[y][x].set( color, color, color, color );
+          }
+        }
+        Point<float> tail = (_action.pos() - _action.motion()*2);
+        _action.centerblit( tail.rebind<int32_t>(), dot );
+        if (_action.pos().y < 200) {
+          _action.moremotion( _action.motion() - Point<float>( 0, -1 ) );
+        } else {
+          _action.normalmotion();
+        }
+        
+      }
     }
-  }
 
-  uintptr_t m_index;
+    uintptr_t m_index;
+  };
+
 };
 
-Gate ExpMap::start_incoming() { return Gate( new ExpRoomBuf(1), Point<int32_t>(50, 50) ); }
+Gate ExpMap::start_incoming() { return Gate( new ExpRoomBuf(4), Point<int32_t>(50, 50) ); }

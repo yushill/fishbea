@@ -62,6 +62,7 @@ struct Action
   void moremotion( Point<float> const& _delta ) { m_pos += _delta; }
   void cutmotion( Point<float> const& w1, Point<float> const& w2 );
   Point<float> const& pos() const { return m_origin; }
+  Point<float> const& motion() const { return m_motion; }
   
   // Interactions
   Story const&      story() const { return m_story; }
@@ -77,7 +78,7 @@ private:
   int               m_lastflip;
   Story             m_story;
   Room              m_room;
-  Point<float>      m_pos, m_origin;
+  Point<float>      m_pos, m_origin, m_motion;
 };
 
 #endif /* __ACTION_HH__ */
