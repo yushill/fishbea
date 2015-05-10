@@ -79,6 +79,7 @@ private:
   Story             m_story;
   Room              m_room;
   Point<float>      m_pos, m_origin, m_motion;
+  bool              m_collision;
 };
 
 #endif /* __ACTION_HH__ */

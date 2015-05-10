@@ -61,6 +61,7 @@ void Action::run()
     else {
       Room curroom( m_room );
       
+      m_collision = false;
       m_motion = (m_pos - m_origin)*0.5 + m_motion*0.5;
       m_origin = m_pos;
       curroom->process( *this );
@@ -72,6 +73,7 @@ void Action::run()
       }
       cutmotion( Point<float>( pixwidth(thescreen.pixels)+4, pixheight(thescreen.pixels)+4 ), Point<float>( -4, pixheight(thescreen.pixels)+4 ) );
       cutmotion( Point<float>( -4, pixheight(thescreen.pixels)+4 ), Point<float>( -4, -4 ) );
+      if (m_collision) m_motion = Point<float>( 0, 0 );
       this->centerblit( m_origin.rebind<int32_t>(), gallery::hero );
       
       Ghost ghost(curroom,*this);
@@ -179,6 +181,7 @@ Action::cutmotion( Point<float> const& _w1, Point<float> const& _w2 )
   if ((w2-x)*(w1-x) > 0) return;
   
   // prevent collision
+  m_collision = true;
   if ((m1-x).sqnorm() > 8)
     m_pos = ((x*2 + m1)/3).rebind<float>();
   else
@@ -237,6 +240,9 @@ Action::jump()
   }
   m_story.writebounds( std::cerr << "Bound after jump: " ) << std::endl;
   m_story.active->restore_state( m_pos, m_room );
+  m_motion = Point<float>();
+  m_origin = m_pos;
+  
   std::cerr << "Jumping to room: " << m_room->getname() << ".\n";
   if (cmds[Shift])
     {
