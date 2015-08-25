@@ -12,7 +12,7 @@ main( int argc, char** argv )
   Action action;
   
   //action.moveto( pebble::Simple::start_incoming() );
-  action.moveto( ExpMap::start_incoming() );
+  action.moveto( Slalom::start_incoming() );
   
   std::cerr << "Rolling!!!\n";
   

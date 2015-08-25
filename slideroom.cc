@@ -108,8 +108,8 @@ namespace {
       beg -= Point<int32_t>(radius,radius);
       end += Point<int32_t>(radius,radius);
       int32_t ybeg, yend, xbeg, xend;
-      beg.pull( xbeg, xend );
-      end.pull( ybeg, yend );
+      beg.pull( xbeg, ybeg );
+      end.pull( xend, yend );
       for (int32_t x = xbeg; x < xend; ++x) {
         for (int32_t y = ybeg; y < yend; ++y) {
           _action.thescreen.pixels[y][x].set( 0, 0, 0, 0xff );
