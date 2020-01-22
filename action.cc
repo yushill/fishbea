@@ -220,7 +220,7 @@ Action::jump()
     if (cmds[Select]) break;
     if (m_story.active->single()) continue;
     int dir = 0;
-    std::auto_ptr<TimeLine> aptl;
+    std::unique_ptr<TimeLine> aptl;
     if      (cmds[Right])  { m_story.movfwd(); dir = -pixwidth(thescreen.pixels); }
     else if (cmds[Left])   { m_story.movbwd(); dir = +pixwidth(thescreen.pixels); }
     else if (cmds[DelFwd]) { aptl.reset( m_story.popfwd() ); dir = -pixwidth(thescreen.pixels); }

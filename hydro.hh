@@ -13,7 +13,7 @@ namespace hydro
     int32_t value;
     void set( double _value )
     {
-      if (isnan( _value )) { value = 0x80000000; return; }
+      if (std::isnan( _value )) { value = 0x80000000; return; }
       double rem = fmod( _value, 8. );
       if (rem < 0) rem += 8.;
       value = int32_t( rem*double(1<<28) );
